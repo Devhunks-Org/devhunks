@@ -1,211 +1,141 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useGSAP } from "@gsap/react";
+import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
+import MenuOverlay from "@/components/core/MenuOverlay";
 
-gsap.registerPlugin(ScrollTrigger);
-
-const CoinPileCanvas = dynamic(() => import("@/components/three/CoinPileCanvas"), {
+const CoinPhysicsCanvas = dynamic(() => import("@/components/canvas/CoinPhysicsCanvas"), {
   ssr: false,
-  loading: () => <div className="absolute inset-0" style={{ backgroundColor: "var(--c-bg)" }} />,
 });
 
-const HEADLINE_PARTS = [
-  { text: "We", accent: false },
-  { text: "build", accent: false },
-  { text: "websites", accent: false },
-  { text: "people", accent: true },
-  { text: "remember.", accent: true },
-];
+function LiveWarsawClock() {
+  const [time, setTime] = useState("");
 
-interface HeroSectionProps {
-  ready: boolean;
-}
-
-export default function HeroSection({ ready }: HeroSectionProps) {
-  const sectionRef = useRef<HTMLElement>(null);
-  const headlineRef = useRef<HTMLHeadingElement>(null);
-  const subRef = useRef<HTMLParagraphElement>(null);
-  const metaRef = useRef<HTMLDivElement>(null);
-  const charsRef = useRef<HTMLSpanElement[]>([]);
-  const [inView, setInView] = useState(true);
-
-  // IntersectionObserver for canvas frameloop optimization
   useEffect(() => {
-    const el = sectionRef.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => setInView(entry.isIntersecting),
-      { threshold: 0.1 }
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
+    const update = () => {
+      const now = new Date();
+      const formatted = now.toLocaleTimeString("en-GB", {
+        timeZone: "Europe/Warsaw",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      });
+      setTime(formatted);
+    };
+    update();
+    const id = setInterval(update, 1000);
+    return () => clearInterval(id);
   }, []);
 
-  // Entrance animation once preloader finishes
-  useGSAP(
-    () => {
-      if (!ready) return;
-      const chars = charsRef.current.filter(Boolean);
-      gsap.fromTo(
-        chars,
-        { yPercent: 100, rotateZ: 5, opacity: 0 },
-        {
-          yPercent: 0,
-          rotateZ: 0,
-          opacity: 1,
-          duration: 0.9,
-          ease: "power3.out",
-          stagger: 0.018,
-        }
-      );
-      gsap.fromTo(
-        [subRef.current, metaRef.current],
-        { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.8, stagger: 0.12, ease: "power2.out", delay: 0.4 }
-      );
-    },
-    { scope: sectionRef, dependencies: [ready] }
-  );
+  return <span>{time || "07:40"}</span>;
+}
 
-  // Build character spans preserving words
-  const buildChars = () => {
-    let idx = 0;
-    return HEADLINE_PARTS.map((part, pi) => (
-      <span key={pi} className="inline-block whitespace-nowrap mr-[0.25em]">
-        {part.text.trim().split("").map((char, ci) => {
-          const i = idx++;
-          return (
-            <span
-              key={`${pi}-${ci}`}
-              ref={(el) => {
-                if (el) charsRef.current[i] = el;
-              }}
-              className="char"
-              style={{
-                color: part.accent ? "var(--c-accent)" : "var(--c-text)",
-                display: "inline-block",
-              }}
-            >
-              {char}
-            </span>
-          );
-        })}
-      </span>
-    ));
-  };
+export default function HeroSection() {
+  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <section
-      ref={sectionRef}
-      id="hero"
-      className="relative w-full min-h-screen flex flex-col"
-      style={{ backgroundColor: "var(--c-bg)" }}
-    >
-      {/* 3D Physics Canvas — background */}
-      <div className="absolute inset-0 z-0">
-        <CoinPileCanvas isInView={inView} />
-      </div>
-
-      {/* Foreground UI — pointer-events-none */}
-      <div className="relative z-10 flex flex-col justify-between min-h-screen pt-32 pb-12 px-6 md:px-12 pointer-events-none">
-        <div className="max-w-5xl">
-          {/* Headline */}
-          <h1
-            ref={headlineRef}
-            className="text-[clamp(2.4rem,6.5vw,5.8rem)] font-light leading-[1.05] tracking-[-0.04em] mb-8"
-            style={{ fontFamily: "var(--font-display, sans-serif)" }}
-            aria-label="We build websites people remember."
+    <section className="w-full bg-[#f0f0ef] p-2 sm:p-3 md:p-4 select-none">
+      {/* Framed Red Hero Card */}
+      <div
+        className="relative w-full min-h-[92vh] lg:min-h-[94vh] bg-[#ff003d] text-white rounded-[24px] sm:rounded-[32px] overflow-hidden flex flex-col justify-between p-6 sm:p-10 md:p-14 shadow-2xl"
+        style={{ isolation: "isolate" }}
+      >
+        {/* Top Header */}
+        <header className="relative z-50 flex items-center justify-between w-full">
+          <a
+            href="/"
+            className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white hover:opacity-90 transition-opacity"
+            style={{ fontFamily: 'var(--font-display, "Syne", sans-serif)' }}
           >
-            <span aria-hidden="true">{buildChars()}</span>
-          </h1>
+            awake.
+          </a>
 
-          {/* Subcopy */}
-          <p
-            ref={subRef}
-            className="max-w-xl text-[clamp(0.95rem,1.5vw,1.15rem)] leading-relaxed"
-            style={{ color: "var(--c-muted)" }}
-          >
-            Awake is a creative digital studio in Warsaw. We design and build premium
-            websites and web products for founders and product teams who need to stand out.
-          </p>
-        </div>
-
-        {/* Studio Metadata */}
-        <div
-          ref={metaRef}
-          className="flex flex-wrap gap-8 md:gap-16 pt-6"
-          style={{ borderTop: "1px solid var(--c-border)" }}
-        >
-          <div className="flex flex-col gap-1">
-            <span
-              className="text-[10px] uppercase tracking-[0.18em]"
-              style={{ fontFamily: "var(--font-mono, monospace)", color: "var(--c-dim)" }}
-            >
-              Based in
-            </span>
-            <span
-              className="text-[12px] uppercase tracking-[0.12em]"
-              style={{ fontFamily: "var(--font-mono, monospace)", color: "var(--c-muted)" }}
-            >
-              Warsaw, Poland
-            </span>
-          </div>
-          <div className="flex flex-col gap-1">
-            <span
-              className="text-[10px] uppercase tracking-[0.18em]"
-              style={{ fontFamily: "var(--font-mono, monospace)", color: "var(--c-dim)" }}
-            >
-              Say hello
-            </span>
+          <div className="flex items-center gap-3">
             <a
               href="mailto:contact@awakeagency.dev"
-              className="text-[12px] uppercase tracking-[0.12em] transition-colors pointer-events-auto"
-              style={{
-                fontFamily: "var(--font-mono, monospace)",
-                color: "var(--c-muted)",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "var(--c-accent)")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "var(--c-muted)")}
+              className="rounded-full px-5 py-2 text-[11px] font-mono tracking-[0.1em] text-white bg-white/20 hover:bg-white/30 backdrop-blur-sm transition-all"
             >
-              contact@awakeagency.dev
+              get in touch.
+            </a>
+
+            <button
+              onClick={() => setMenuOpen((prev) => !prev)}
+              className="rounded-full px-5 py-2 text-[11px] font-mono tracking-[0.1em] text-[#ff003d] bg-white hover:bg-white/90 font-medium flex items-center gap-2 transition-all shadow-sm"
+              aria-label={menuOpen ? "Close menu" : "Open menu"}
+            >
+              {menuOpen ? (
+                <>
+                  <span>close.</span>
+                  <span className="font-bold text-sm leading-none">✕</span>
+                </>
+              ) : (
+                <>
+                  <span>menu.</span>
+                  <span className="flex flex-col gap-[3px] w-3">
+                    <span className="w-full h-[1.5px] bg-[#ff003d] block" />
+                    <span className="w-full h-[1.5px] bg-[#ff003d] block" />
+                  </span>
+                </>
+              )}
+            </button>
+          </div>
+        </header>
+
+        {/* 2D Physics Coins Canvas */}
+        {!menuOpen && <CoinPhysicsCanvas floorOffset={56} />}
+
+        {/* Hero Headline & Subcopy (Split 2-Column Layout) */}
+        {!menuOpen && (
+          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 my-auto pt-6 pb-4 pointer-events-none">
+            {/* Left Column: WE / WEBSITES / REMEMBER. */}
+            <div className="lg:col-span-7 flex flex-col">
+              <h1
+                className="text-[clamp(3.4rem,8.5vw,8.5rem)] font-extrabold leading-[0.92] tracking-[-0.04em] text-white uppercase"
+                style={{ fontFamily: 'var(--font-display, "Syne", sans-serif)' }}
+              >
+                <span className="block">WE</span>
+                <span className="block">WEBSITES</span>
+                <span className="block">REMEMBER.</span>
+              </h1>
+            </div>
+
+            {/* Right Column: BUILD / PEOPLE + Subcopy */}
+            <div className="lg:col-span-5 flex flex-col justify-start lg:pl-6">
+              <h2
+                className="text-[clamp(3.4rem,8.5vw,8.5rem)] font-extrabold leading-[0.92] tracking-[-0.04em] text-white uppercase"
+                style={{ fontFamily: 'var(--font-display, "Syne", sans-serif)' }}
+              >
+                <span className="block">BUILD</span>
+                <span className="block">PEOPLE</span>
+              </h2>
+
+              <p
+                className="text-white/85 text-xs sm:text-sm md:text-[13px] leading-relaxed max-w-sm mt-6 sm:mt-8"
+                style={{ fontFamily: 'var(--font-display, "Syne", sans-serif)' }}
+              >
+                Awake is a creative digital studio in Warsaw. We design and build premium websites and web products for founders and product teams who need to stand out.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Bottom Metadata Row */}
+        {!menuOpen && (
+          <div className="relative z-10 w-full pt-4 border-t border-white/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-[10px] sm:text-[11px] font-mono tracking-[0.14em] text-white/90 uppercase pointer-events-none">
+            <div>
+              BASED IN: WARSAW <LiveWarsawClock /> · 8°C
+            </div>
+            <a
+              href="mailto:contact@awakeagency.dev"
+              className="hover:text-white transition-colors pointer-events-auto"
+            >
+              SAY HELLO: CONTACT@AWAKEAGENCY.DEV
             </a>
           </div>
-          <div className="flex flex-col gap-1">
-            <span
-              className="text-[10px] uppercase tracking-[0.18em]"
-              style={{ fontFamily: "var(--font-mono, monospace)", color: "var(--c-dim)" }}
-            >
-              Projects shipped
-            </span>
-            <span
-              className="text-[12px] uppercase tracking-[0.12em]"
-              style={{ fontFamily: "var(--font-mono, monospace)", color: "var(--c-accent)" }}
-            >
-              60+
-            </span>
-          </div>
-        </div>
-      </div>
+        )}
 
-      {/* Scroll hint */}
-      <div
-        className="absolute bottom-6 right-8 z-10 flex flex-col items-center gap-2"
-        style={{ opacity: ready ? 1 : 0, transition: "opacity 0.5s 1.2s" }}
-      >
-        <div
-          className="w-px h-12 animate-pulse"
-          style={{ backgroundColor: "var(--c-accent)" }}
-        />
-        <span
-          className="text-[9px] uppercase tracking-[0.2em] -rotate-90 origin-center translate-y-4"
-          style={{ fontFamily: "var(--font-mono, monospace)", color: "var(--c-dim)" }}
-        >
-          Scroll
-        </span>
+        {/* Full-Screen Menu Overlay (Takes over inside red card) */}
+        <MenuOverlay isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
       </div>
     </section>
   );

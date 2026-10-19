@@ -7,8 +7,9 @@
   --c-text: #F4F4F5;
   --c-muted: #A1A1AA;
   --c-dim: #3F3F46;
-  --c-accent: #EF4444;
-  --c-accent-hover: #DC2626;
+  --c-accent: #ff003d;
+  --c-accent-hover: #e00036;
+  --c-red: #ff003d;
 }
 
 
