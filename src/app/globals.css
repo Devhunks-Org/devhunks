@@ -98,3 +98,15 @@ html.lenis, html.lenis body {
 .lenis.lenis-stopped {
   overflow: hidden;
 }
+
+/* Extended grotesk (hero headline, menu) */
+.font-wide {
+  font-family: var(--font-wide), "Helvetica Neue", Arial, sans-serif;
+  font-stretch: 112%;
+  font-variation-settings: "wdth" 112;
+}
+
+/* Neutral grotesk (logo, buttons, meta) */
+.font-tight {
+  font-family: var(--font-sans), "Helvetica Neue", Arial, sans-serif;
+}
