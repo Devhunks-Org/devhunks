@@ -4,9 +4,12 @@ import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { gsap } from "gsap";
+import { useGSAP } from "@gsap/react";
+import { onPreloaderDone } from "@/components/core/Preloader";
 import MenuOverlay, { MenuLetterStroke } from "@/components/core/MenuOverlay";
 import { OPEN_MENU_EVENT } from "@/components/core/StickyNav";
 import GlitchText from "@/components/ui/GlitchText";
+import { SITE } from "@/lib/site";
 
 const CoinPhysicsCanvas = dynamic(
   () => import("@/components/canvas/CoinPhysicsCanvas"),
@@ -15,28 +18,7 @@ const CoinPhysicsCanvas = dynamic(
   },
 );
 
-const EMAIL = "contact@awakeagency.dev";
-
-function LiveWarsawClock() {
-  const [time, setTime] = useState("");
-
-  useEffect(() => {
-    const update = () => {
-      const formatted = new Date().toLocaleTimeString("en-GB", {
-        timeZone: "Europe/Warsaw",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      });
-      setTime(formatted);
-    };
-    update();
-    const id = setInterval(update, 1000);
-    return () => clearInterval(id);
-  }, []);
-
-  return <span suppressHydrationWarning>{time || "07:40"}</span>;
-}
+const EMAIL = SITE.email;
 
 export default function HeroSection() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -60,22 +42,35 @@ export default function HeroSection() {
     return () => window.removeEventListener("resize", updateFloorOffset);
   }, []);
 
-  // Coins drop on the first interaction with the page
-  useEffect(() => {
-    const start = () => {
-      setDropKey((k) => (k === 0 ? 1 : k));
-      cleanup();
-    };
-    const cleanup = () => {
-      window.removeEventListener("pointermove", start);
-      window.removeEventListener("touchstart", start);
-      window.removeEventListener("wheel", start);
-    };
-    window.addEventListener("pointermove", start);
-    window.addEventListener("touchstart", start, { passive: true });
-    window.addEventListener("wheel", start, { passive: true });
-    return cleanup;
-  }, []);
+  // Intro: hidden until the preloader hands over, then header / headline / meta animate in
+  useGSAP(
+    () => {
+      const card = cardRef.current;
+      if (!card) return;
+      const q = gsap.utils.selector(card);
+      const words = q("[data-mask] > span");
+      const header = q("[data-intro-header] > *");
+      const fades = q("[data-intro-fade]");
+      const line = baselineRef.current;
+
+      gsap.set(words, { yPercent: 115 });
+      gsap.set(header, { autoAlpha: 0, y: -14 });
+      gsap.set(fades, { autoAlpha: 0, y: 14 });
+      gsap.set(line, { scaleX: 0, transformOrigin: "left center" });
+
+      return onPreloaderDone(() => {
+        gsap
+          .timeline({ defaults: { ease: "expo.out" } })
+          .to(words, { yPercent: 0, duration: 1.15, stagger: 0.07 }, 0)
+          .to(header, { autoAlpha: 1, y: 0, duration: 0.9, stagger: 0.08 }, 0.1)
+          .to(line, { scaleX: 1, duration: 1.4, ease: "power3.inOut" }, 0.2)
+          .to(fades, { autoAlpha: 1, y: 0, duration: 0.9, stagger: 0.08 }, 0.45)
+          // Coins fall once the headline has landed
+          .call(() => setDropKey((k) => (k === 0 ? 1 : k)), undefined, 0.6);
+      });
+    },
+    { scope: cardRef }
+  );
 
   // The sticky nav's menu button scrolls back up and opens the menu here
   useEffect(() => {
@@ -104,6 +99,7 @@ export default function HeroSection() {
     <section id="home" className="w-full bg-white p-2.5 sm:p-5 select-none">
       <div
         ref={cardRef}
+        data-hero-card
         className="relative w-full h-[calc(100svh-20px)] sm:h-[calc(100svh-40px)] min-h-[560px] bg-[#ff003d] text-white rounded-[24px] sm:rounded-[32px] overflow-hidden flex flex-col p-5 sm:p-10"
         style={{ isolation: "isolate" }}
       >
@@ -111,12 +107,12 @@ export default function HeroSection() {
         <MenuLetterStroke isOpen={menuOpen} />
 
         {/* Header */}
-        <header className="relative z-50 flex items-center justify-between w-full h-10">
+        <header data-intro-header className="relative z-50 flex items-center justify-between w-full h-10">
           <Link
             href="/"
             className="font-tight text-[34px] sm:text-[40px] leading-none tracking-[-0.03em] text-white"
           >
-            awake.
+            {SITE.name}.
           </Link>
 
           <div className="flex items-center gap-3">
@@ -190,22 +186,32 @@ export default function HeroSection() {
               className="font-wide uppercase font-medium text-white leading-none text-[6.9vw] sm:text-[7.64vw] min-[1800px]:text-[8.6rem]"
             >
               <span className="flex flex-wrap gap-x-[0.28em] sm:justify-between">
-                <GlitchText text="We" />
-                <GlitchText text="build" />
+                <span data-mask className="inline-block overflow-hidden align-top">
+                  <GlitchText text="We" className="inline-block" />
+                </span>
+                <span data-mask className="inline-block overflow-hidden align-top">
+                  <GlitchText text="build" className="inline-block" />
+                </span>
               </span>
               <span className="flex flex-wrap gap-x-[0.28em] sm:justify-between">
-                <GlitchText text="websites" />
-                <GlitchText text="people" />
+                <span data-mask className="inline-block overflow-hidden align-top">
+                  <GlitchText text="websites" className="inline-block" />
+                </span>
+                <span data-mask className="inline-block overflow-hidden align-top">
+                  <GlitchText text="people" className="inline-block" />
+                </span>
               </span>
               <span className="block">
-                <GlitchText text="remember." />
+                <span data-mask className="inline-block overflow-hidden align-top">
+                  <GlitchText text="remember." className="inline-block" />
+                </span>
               </span>
             </h1>
 
-            <p className="font-tight mt-6 sm:mt-0 sm:absolute sm:right-0 sm:top-[calc(66.67%+34px)] max-w-[300px] text-[15px] leading-6 text-white">
-              Awake is a creative digital studio in Warsaw. We design and build
-              premium websites and web products for founders and product teams
-              who need to stand out.
+            <p data-intro-fade className="font-tight mt-6 sm:mt-0 sm:absolute sm:right-0 sm:top-[calc(66.67%+34px)] max-w-[300px] text-[15px] leading-6 text-white">
+              {SITE.displayName} is a creative digital studio working remotely,
+              worldwide. We design and build premium websites and web products
+              for founders and product teams who need to stand out.
             </p>
           </div>
         </div>
@@ -218,7 +224,7 @@ export default function HeroSection() {
         />
 
         {/* Bottom row */}
-        <div className="font-tight relative z-30 mt-6 sm:mt-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 sm:gap-2 text-[13px] sm:text-[15px] leading-6 uppercase tracking-[0.02em]">
+        <div data-intro-fade className="font-tight relative z-30 mt-6 sm:mt-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 sm:gap-2 text-[13px] sm:text-[15px] leading-6 uppercase tracking-[0.02em]">
           {menuOpen ? (
             <>
               <a
@@ -241,9 +247,7 @@ export default function HeroSection() {
             <>
               <div>
                 <span className="text-white/75">Based in: </span>
-                <span>
-                  Warsaw <LiveWarsawClock /> · 8°C
-                </span>
+                <span>{SITE.location}</span>
               </div>
               <a
                 href={`mailto:${EMAIL}`}

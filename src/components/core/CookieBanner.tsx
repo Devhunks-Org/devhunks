@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { onPreloaderDone } from "./Preloader";
 
-const STORAGE_KEY = "awake_cookie_consent";
+const STORAGE_KEY = "devhunks_cookie_consent";
 
 export default function CookieBanner() {
   const [visible, setVisible] = useState(false);
@@ -12,10 +13,16 @@ export default function CookieBanner() {
     try {
       stored = localStorage.getItem(STORAGE_KEY);
     } catch {}
-    if (!stored) {
-      const timer = setTimeout(() => setVisible(true), 2500);
-      return () => clearTimeout(timer);
-    }
+    if (stored) return;
+    let timer: number | undefined;
+    // Wait for the preloader + hero intro before asking
+    const off = onPreloaderDone(() => {
+      timer = window.setTimeout(() => setVisible(true), 1800);
+    });
+    return () => {
+      off();
+      window.clearTimeout(timer);
+    };
   }, []);
 
   const dismiss = (choice: "all" | "none" | "choose") => {

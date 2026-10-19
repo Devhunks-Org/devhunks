@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
+import { SITE } from "@/lib/site";
 
 const OPTIONS = ["development", "web design", "branding"];
 // Repeat the options so the column always overflows the band (looks endless)
@@ -86,7 +87,7 @@ export default function LeadSelectorSection() {
 
           <div className="flex justify-center md:justify-end w-full">
             <a
-              href={`mailto:contact@awakeagency.dev?subject=${encodeURIComponent(`I need ${selected}`)}`}
+              href={`mailto:${SITE.email}?subject=${encodeURIComponent(`I need ${selected}`)}`}
               className="font-tight inline-flex items-center gap-3 rounded-full bg-white text-[#ff003d] font-medium leading-none text-[clamp(1.8rem,3.2vw,3rem)] pt-[0.2em] pb-[0.3em] px-[0.45em] hover:bg-white/90 transition-colors"
             >
               next

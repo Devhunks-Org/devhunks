@@ -110,3 +110,10 @@ html.lenis, html.lenis body {
 .font-tight {
   font-family: var(--font-sans), "Helvetica Neue", Arial, sans-serif;
 }
+
+/* Scroll lock while the preloader runs */
+html[data-loading],
+html[data-loading] body {
+  overflow: hidden;
+  touch-action: none;
+}

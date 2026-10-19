@@ -8,10 +8,12 @@ import LeadSelectorSection from "@/components/sections/LeadSelectorSection";
 import Footer from "@/components/sections/Footer";
 import CookieBanner from "@/components/core/CookieBanner";
 import StickyNav from "@/components/core/StickyNav";
+import Preloader from "@/components/core/Preloader";
 
 export default function HomePage() {
   return (
     <>
+      <Preloader />
       <StickyNav />
       <main id="main-content">
         <HeroSection />

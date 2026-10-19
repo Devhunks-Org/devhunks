@@ -25,6 +25,9 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
     lenisRef.current = lenis;
     lenisInstance = lenis;
 
+    // The preloader locks scrolling until it hands over to the hero
+    if (document.documentElement.dataset.loading) lenis.stop();
+
     // Sync GSAP ScrollTrigger with Lenis
     lenis.on("scroll", ScrollTrigger.update);
 

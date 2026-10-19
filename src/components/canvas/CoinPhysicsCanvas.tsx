@@ -153,12 +153,12 @@ export default function CoinPhysicsCanvas({ floorOffset = 116, dropKey = 0, paus
       ctx.fillStyle = grad;
       ctx.fill();
 
-      // Embossed "a." mark
+      // Embossed "d." mark
       ctx.fillStyle = palette.glyph;
       ctx.font = `500 ${Math.round(radius * 1.15)}px "Helvetica Neue", Arial, sans-serif`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText("a.", radius * 0.04, -radius * 0.06);
+      ctx.fillText("d.", radius * 0.04, -radius * 0.06);
 
       ctx.restore();
     };

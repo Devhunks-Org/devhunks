@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { getLenis } from "@/components/core/SmoothScroll";
+import { SITE } from "@/lib/site";
 
-const EMAIL = "contact@awakeagency.dev";
+const EMAIL = SITE.email;
 
 const NAV = [
   { label: "Home", href: "#home" },
@@ -13,28 +14,9 @@ const NAV = [
 ];
 
 const SOCIAL = [
-  { label: "LinkedIn", href: "#" },
-  { label: "Upwork", href: "#" },
+  { label: "LinkedIn", href: SITE.links.linkedin },
+  { label: "Upwork", href: SITE.links.upwork },
 ];
-
-function WarsawTime() {
-  const [time, setTime] = useState("");
-  useEffect(() => {
-    const update = () =>
-      setTime(
-        new Date().toLocaleTimeString("en-GB", {
-          timeZone: "Europe/Warsaw",
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: false,
-        })
-      );
-    update();
-    const id = setInterval(update, 10000);
-    return () => clearInterval(id);
-  }, []);
-  return <span suppressHydrationWarning>{time}</span>;
-}
 
 export default function Footer() {
   const [copied, setCopied] = useState(false);
@@ -63,7 +45,7 @@ export default function Footer() {
       <div className="font-tight bg-[#161d25] text-white rounded-[24px] sm:rounded-[32px] p-6 sm:p-10 min-h-[436px] flex flex-col justify-between gap-14">
         <div className="grid grid-cols-2 md:grid-cols-[479fr_253fr_384fr_204fr] gap-y-10 gap-x-6">
           <a href="#home" onClick={(e) => scrollTo(e, "#home")} className="col-span-2 md:col-span-1 text-[40px] leading-none tracking-[-0.03em]">
-            awake.
+            {SITE.name}.
           </a>
 
           <ul className="flex flex-col gap-2.5 text-[18px] leading-none">
@@ -96,7 +78,7 @@ export default function Footer() {
             <div>
               <p className="text-[15px] leading-none text-white/45">Based in</p>
               <p className="mt-2 text-[18px] leading-none">
-                Warsaw <WarsawTime /> · 8°C
+                {SITE.location}
               </p>
             </div>
           </div>
@@ -104,7 +86,7 @@ export default function Footer() {
 
         <div className="grid grid-cols-2 md:grid-cols-[479fr_253fr_384fr_204fr] gap-y-6 gap-x-6 items-end">
           <p className="col-span-2 md:col-span-1 text-[15px] leading-none order-3 md:order-none">
-            © Awake {new Date().getFullYear()}. All rights reserved.
+            © {SITE.displayName} {new Date().getFullYear()}. All rights reserved.
           </p>
           <div className="flex gap-4 text-[12px] leading-none uppercase tracking-[0.06em]">
             <a href="#" className="hover:opacity-60 transition-opacity">Privacy</a>

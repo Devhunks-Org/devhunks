@@ -32,21 +32,21 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Awake — Creative Digital Studio in Warsaw",
+  title: "Devhunks — Creative Digital Studio",
   description:
-    "We design and build premium websites and web products for founders and product teams who need to stand out. Webflow, Next.js, motion and WebGL. 60+ projects shipped.",
+    "We design and build premium websites and web products for founders and product teams who need to stand out. Webflow, Next.js, motion and WebGL.",
   keywords: [
     "creative digital studio",
-    "web design Warsaw",
+    "web design agency",
     "Webflow development",
     "Next.js development",
     "motion design",
     "WebGL website",
   ],
-  authors: [{ name: "Awake Studio" }],
+  authors: [{ name: "Devhunks" }],
   openGraph: {
-    title: "Awake — Creative Digital Studio in Warsaw",
-    description: "Premium websites and web products. 60+ projects shipped.",
+    title: "Devhunks — Creative Digital Studio",
+    description: "Premium websites and web products for founders and product teams.",
     type: "website",
     locale: "en_GB",
   },
@@ -59,7 +59,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${syne.variable} ${jakarta.variable} ${jetbrainsMono.variable} ${interTight.variable}`}>
-      <body>
+      <body suppressHydrationWarning>
         <SmoothScroll>{children}</SmoothScroll>
       </body>
     </html>

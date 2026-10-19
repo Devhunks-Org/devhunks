@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { getLenis } from "./SmoothScroll";
+import { SITE } from "@/lib/site";
 
-export const OPEN_MENU_EVENT = "awake:open-menu";
+export const OPEN_MENU_EVENT = "devhunks:open-menu";
 
 /**
  * White bar that slides in once the hero is out of view and the user scrolls up,
@@ -43,11 +44,11 @@ export default function StickyNav() {
     >
       <header className="font-tight flex items-center justify-between h-14 px-4 sm:px-5 rounded-[20px] bg-white/95 backdrop-blur-md shadow-[0_8px_30px_rgba(22,29,37,0.08)]">
         <a href="#home" className="text-[30px] leading-none tracking-[-0.03em] text-[#161d25]" tabIndex={visible ? 0 : -1}>
-          awake.
+          {SITE.name}.
         </a>
         <div className="flex items-center gap-2.5">
           <a
-            href="mailto:contact@awakeagency.dev"
+            href={`mailto:${SITE.email}`}
             tabIndex={visible ? 0 : -1}
             className="hidden sm:inline-flex items-center h-9 px-5 rounded-full bg-[#f1f1f3] text-[16px] text-[#161d25] hover:bg-[#e8e9eb] transition-colors"
           >

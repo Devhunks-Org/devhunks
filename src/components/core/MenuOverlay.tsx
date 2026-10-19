@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { getLenis } from "./SmoothScroll";
+import { SITE } from "@/lib/site";
 
 interface MenuOverlayProps {
   isOpen: boolean;
@@ -13,24 +14,30 @@ const MENU_ITEMS = [
   { index: "00", label: "HOME", href: "/" },
   { index: "01", label: "SERVICES", href: "#services" },
   { index: "02", label: "PROJECTS", href: "#projects" },
-  { index: "03", label: "CONTACTS", href: "mailto:contact@awakeagency.dev" },
+  { index: "03", label: "CONTACTS", href: `mailto:${SITE.email}` },
 ];
 
 /**
- * Monoline glyphs spelling "awake", drawn one after another behind the menu.
+ * Monoline glyphs spelling "devhunks", drawn one after another behind the menu.
  * viewBox is 700 x 1000; each path is traced with stroke-dashoffset.
  */
 const LETTER_PATHS = [
-  // a — hook + stem, then bowl
-  "M 70 390 C 95 170 250 35 450 35 C 600 35 670 120 655 250 L 590 905 M 640 470 C 420 455 215 535 215 700 C 215 860 400 925 600 895",
-  // w
-  "M 40 250 L 190 905 L 350 430 L 510 905 L 660 250",
-  // a
-  "M 70 390 C 95 170 250 35 450 35 C 600 35 670 120 655 250 L 590 905 M 640 470 C 420 455 215 535 215 700 C 215 860 400 925 600 895",
-  // k
-  "M 150 -40 L 115 960 M 610 330 L 130 720 M 320 565 L 640 960",
+  // d — tall stem, then bowl
+  "M 600 -40 L 590 945 M 600 470 C 400 445 160 525 160 700 C 160 865 380 935 590 895",
   // e
   "M 120 600 L 660 620 C 665 400 540 270 390 270 C 235 270 115 400 115 600 C 115 810 235 945 410 945 C 520 945 600 900 650 820",
+  // v
+  "M 60 270 L 350 930 L 640 270",
+  // h
+  "M 130 -40 L 120 945 M 125 560 C 180 400 300 330 420 330 C 560 330 620 420 620 560 L 615 945",
+  // u
+  "M 110 290 L 110 700 C 110 860 220 935 360 935 C 500 935 600 850 610 700 M 610 290 L 605 955",
+  // n
+  "M 110 300 L 110 955 M 112 520 C 160 380 280 320 400 320 C 540 320 610 410 610 560 L 605 955",
+  // k
+  "M 150 -40 L 115 960 M 610 330 L 130 720 M 320 565 L 640 960",
+  // s
+  "M 600 380 C 560 300 470 270 370 270 C 230 270 140 330 140 430 C 140 540 260 570 380 600 C 520 635 620 680 620 790 C 620 890 520 945 370 945 C 240 945 150 900 100 820",
 ];
 
 export function MenuLetterStroke({ isOpen }: { isOpen: boolean }) {
