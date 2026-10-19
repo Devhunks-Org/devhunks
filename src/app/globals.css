@@ -1,0 +1,103 @@
+@import "tailwindcss";
+
+:root {
+  --c-bg: #09090B;
+  --c-surface: #111115;
+  --c-border: #27272A;
+  --c-text: #F4F4F5;
+  --c-muted: #A1A1AA;
+  --c-dim: #3F3F46;
+  --c-accent: #EF4444;
+  --c-accent-hover: #DC2626;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  background-color: var(--c-bg);
+  color: var(--c-text);
+  overflow-x: hidden;
+}
+
+body {
+  background-color: var(--c-bg);
+  color: var(--c-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: var(--c-bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--c-border);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--c-dim);
+}
+
+/* Selection */
+::selection {
+  background: var(--c-accent);
+  color: #fff;
+}
+
+/* Grid utility */
+.grid-hairline {
+  border-color: var(--c-border);
+}
+
+/* Architectural crosshair markers */
+.crosshair::before,
+.crosshair::after {
+  content: '';
+  position: absolute;
+  background: var(--c-border);
+}
+.crosshair::before {
+  width: 1px;
+  height: 12px;
+  top: -6px;
+  left: 50%;
+}
+.crosshair::after {
+  width: 12px;
+  height: 1px;
+  left: -6px;
+  top: 50%;
+}
+
+/* Overflow clip for text reveal animations */
+.clip-text {
+  overflow: hidden;
+}
+
+/* Split char animation prep */
+.char {
+  display: inline-block;
+  will-change: transform, opacity;
+}
+
+/* Lenis smooth scroll */
+html.lenis, html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
