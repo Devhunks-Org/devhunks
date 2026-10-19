@@ -8,7 +8,10 @@ export default function CookieBanner() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    let stored: string | null = null;
+    try {
+      stored = localStorage.getItem(STORAGE_KEY);
+    } catch {}
     if (!stored) {
       const timer = setTimeout(() => setVisible(true), 2500);
       return () => clearTimeout(timer);
@@ -16,72 +19,43 @@ export default function CookieBanner() {
   }, []);
 
   const dismiss = (choice: "all" | "none" | "choose") => {
-    localStorage.setItem(STORAGE_KEY, choice);
+    try {
+      localStorage.setItem(STORAGE_KEY, choice);
+    } catch {}
     setVisible(false);
   };
 
   if (!visible) return null;
 
   return (
-    <div
-      className="fixed bottom-5 right-5 z-50 max-w-sm p-5 flex flex-col gap-4"
-      style={{
-        backgroundColor: "var(--c-surface)",
-        border: "1px solid var(--c-border)",
-      }}
-    >
-      <p
-        className="text-[12px] leading-relaxed"
-        style={{ color: "var(--c-muted)", fontFamily: "var(--font-mono, monospace)" }}
-      >
-        We use cookies for the booking calendar and, if you allow it, Google Analytics to
-        see how people find the site.
+    <div className="font-tight fixed bottom-3 right-3 sm:bottom-5 sm:right-5 z-[70] w-[calc(100%-24px)] sm:w-[300px] rounded-2xl bg-white p-4 text-[#161d25] shadow-[0_12px_40px_rgba(22,29,37,0.16)]">
+      <p className="text-[12px] leading-[1.5]">
+        We use cookies for the booking calendar and, if you allow it, Google Analytics to see how people find the
+        site.{" "}
+        <a href="#" className="underline underline-offset-2">
+          More<span className="sr-only"> about cookies</span>
+        </a>
       </p>
-      <div className="flex flex-col gap-2">
-        <button
-          onClick={() => dismiss("all")}
-          className="w-full py-2 text-[11px] uppercase tracking-[0.12em] transition-colors"
-          style={{
-            fontFamily: "var(--font-mono, monospace)",
-            backgroundColor: "var(--c-accent)",
-            color: "#fff",
-            border: "none",
-            cursor: "pointer",
-          }}
-        >
-          Accept all
-        </button>
-        <button
-          onClick={() => dismiss("choose")}
-          className="w-full py-2 text-[11px] uppercase tracking-[0.12em] transition-colors"
-          style={{
-            fontFamily: "var(--font-mono, monospace)",
-            backgroundColor: "transparent",
-            color: "var(--c-text)",
-            border: "1px solid var(--c-border)",
-            cursor: "pointer",
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--c-accent)")}
-          onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--c-border)")}
-        >
-          Choose what to allow
-        </button>
+      <div className="mt-3 grid grid-cols-2 gap-2">
         <button
           onClick={() => dismiss("none")}
-          className="w-full py-2 text-[11px] uppercase tracking-[0.12em] transition-colors"
-          style={{
-            fontFamily: "var(--font-mono, monospace)",
-            backgroundColor: "transparent",
-            color: "var(--c-dim)",
-            border: "none",
-            cursor: "pointer",
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = "var(--c-muted)")}
-          onMouseLeave={(e) => (e.currentTarget.style.color = "var(--c-dim)")}
+          className="h-8 rounded-full border border-[#dbdcde] text-[12px] tracking-[0.02em] hover:bg-[#f1f1f3] transition-colors cursor-pointer"
         >
           Reject all
         </button>
+        <button
+          onClick={() => dismiss("all")}
+          className="h-8 rounded-full bg-[#161d25] text-white text-[12px] tracking-[0.02em] hover:bg-[#2d343b] transition-colors cursor-pointer"
+        >
+          Accept all
+        </button>
       </div>
+      <button
+        onClick={() => dismiss("choose")}
+        className="mt-2.5 w-full text-center text-[12px] text-[#161d25]/70 underline underline-offset-2 cursor-pointer"
+      >
+        Choose what to allow
+      </button>
     </div>
   );
 }

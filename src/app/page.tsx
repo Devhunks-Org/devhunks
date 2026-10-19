@@ -7,10 +7,12 @@ import ServicesSection from "@/components/sections/ServicesSection";
 import LeadSelectorSection from "@/components/sections/LeadSelectorSection";
 import Footer from "@/components/sections/Footer";
 import CookieBanner from "@/components/core/CookieBanner";
+import StickyNav from "@/components/core/StickyNav";
 
 export default function HomePage() {
   return (
     <>
+      <StickyNav />
       <main id="main-content">
         <HeroSection />
         <ManifestoSection />

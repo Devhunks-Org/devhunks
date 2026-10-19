@@ -5,11 +5,15 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { gsap } from "gsap";
 import MenuOverlay, { MenuLetterStroke } from "@/components/core/MenuOverlay";
+import { OPEN_MENU_EVENT } from "@/components/core/StickyNav";
 import GlitchText from "@/components/ui/GlitchText";
 
-const CoinPhysicsCanvas = dynamic(() => import("@/components/canvas/CoinPhysicsCanvas"), {
-  ssr: false,
-});
+const CoinPhysicsCanvas = dynamic(
+  () => import("@/components/canvas/CoinPhysicsCanvas"),
+  {
+    ssr: false,
+  },
+);
 
 const EMAIL = "contact@awakeagency.dev";
 
@@ -73,6 +77,13 @@ export default function HeroSection() {
     return cleanup;
   }, []);
 
+  // The sticky nav's menu button scrolls back up and opens the menu here
+  useEffect(() => {
+    const open = () => setMenuOpen(true);
+    window.addEventListener(OPEN_MENU_EVENT, open);
+    return () => window.removeEventListener(OPEN_MENU_EVENT, open);
+  }, []);
+
   // Hero content fades out while the menu takes over the card
   useEffect(() => {
     if (!heroContentRef.current) return;
@@ -90,48 +101,66 @@ export default function HeroSection() {
   };
 
   return (
-    <section className="w-full bg-white p-3 sm:p-5 select-none">
+    <section id="home" className="w-full bg-white p-2.5 sm:p-5 select-none">
       <div
         ref={cardRef}
-        className="relative w-full h-[calc(100svh-24px)] sm:h-[calc(100svh-40px)] min-h-[600px] bg-[#eb003c] text-white rounded-[22px] sm:rounded-[28px] overflow-hidden flex flex-col px-5 pt-6 pb-6 sm:px-11 sm:pt-11 sm:pb-12"
+        className="relative w-full h-[calc(100svh-20px)] sm:h-[calc(100svh-40px)] min-h-[560px] bg-[#ff003d] text-white rounded-[24px] sm:rounded-[32px] overflow-hidden flex flex-col p-5 sm:p-10"
         style={{ isolation: "isolate" }}
       >
         {/* Menu background letter (behind everything) */}
         <MenuLetterStroke isOpen={menuOpen} />
 
         {/* Header */}
-        <header className="relative z-50 flex items-center justify-between w-full">
+        <header className="relative z-50 flex items-center justify-between w-full h-10">
           <Link
             href="/"
-            className="font-tight text-[30px] sm:text-[46px] leading-none font-normal tracking-[-0.02em] text-white"
+            className="font-tight text-[34px] sm:text-[40px] leading-none tracking-[-0.03em] text-white"
           >
             awake.
           </Link>
 
-          <div className="flex items-center gap-2 sm:gap-3.5">
+          <div className="flex items-center gap-3">
             <a
               href={`mailto:${EMAIL}`}
-              className="font-tight hidden sm:inline-flex items-center h-11 rounded-full px-7 text-[17px] font-medium tracking-[-0.01em] text-white bg-white/20 hover:bg-white/30 transition-colors"
+              className="font-tight hidden sm:inline-flex items-center h-10 rounded-full px-[22px] text-[18px] text-white bg-white/30 hover:bg-white/40 transition-colors"
             >
               get in touch.
             </a>
 
             <button
               onClick={toggleMenu}
-              className={`font-tight inline-flex items-center gap-4 h-10 sm:h-11 rounded-full pl-6 sm:pl-7 pr-5 sm:pr-6 text-[15px] sm:text-[17px] font-medium tracking-[-0.01em] text-[#eb003c] transition-colors cursor-pointer ${
-                menuOpen ? "bg-white/90 hover:bg-white" : "bg-white"
-              }`}
+              className="font-tight inline-flex items-center gap-4 h-10 rounded-full pl-[25px] pr-[22px] text-[18px] text-[#d90033] bg-white hover:bg-white/90 transition-colors cursor-pointer"
               aria-label={menuOpen ? "Close menu" : "Open menu"}
               aria-expanded={menuOpen}
             >
               <span>{menuOpen ? "close." : "menu."}</span>
               {menuOpen ? (
-                <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
-                  <path d="M2 2 L14 14 M14 2 L2 14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M2 2 L14 14 M14 2 L2 14"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                  />
                 </svg>
               ) : (
-                <svg width="20" height="12" viewBox="0 0 20 12" aria-hidden="true">
-                  <path d="M6 3 H19 M1 9 H14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                <svg
+                  width="20"
+                  height="12"
+                  viewBox="0 0 20 12"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M6 3 H19 M1 9 H14"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                  />
                 </svg>
               )}
             </button>
@@ -143,61 +172,85 @@ export default function HeroSection() {
           className="absolute inset-0 z-20 pointer-events-none transition-opacity duration-300"
           style={{ opacity: menuOpen ? 0 : 1 }}
         >
-          <CoinPhysicsCanvas floorOffset={floorOffset} dropKey={dropKey} paused={menuOpen} />
+          <CoinPhysicsCanvas
+            floorOffset={floorOffset}
+            dropKey={dropKey}
+            paused={menuOpen}
+          />
         </div>
 
-        {/* Headline */}
-        <div ref={heroContentRef} className="relative z-10 flex-1 flex flex-col justify-center lg:pt-14">
-          <div className="font-wide grid grid-cols-1 lg:grid-cols-2 gap-x-8 text-[clamp(2.6rem,6.95vw,8.25rem)] font-[420] leading-[1.1] tracking-[-0.01em] uppercase">
-            <h1 className="sr-only">We build websites people remember.</h1>
-            <div className="flex flex-col" aria-hidden="true">
-              <GlitchText text="WE" className="block" />
-              <GlitchText text="WEBSITES" className="block" />
-              <GlitchText text="REMEMBER." className="block" />
-            </div>
+        {/* Headline: rows "We · build / websites · people / remember." */}
+        <div
+          ref={heroContentRef}
+          className="relative z-10 flex-1 flex flex-col justify-start sm:justify-center pt-14 sm:pt-0"
+        >
+          <div className="relative">
+            <h1
+              aria-label="We build websites people remember."
+              className="font-wide uppercase font-medium text-white leading-none text-[6.9vw] sm:text-[7.64vw] min-[1800px]:text-[8.6rem]"
+            >
+              <span className="flex flex-wrap gap-x-[0.28em] sm:justify-between">
+                <GlitchText text="We" />
+                <GlitchText text="build" />
+              </span>
+              <span className="flex flex-wrap gap-x-[0.28em] sm:justify-between">
+                <GlitchText text="websites" />
+                <GlitchText text="people" />
+              </span>
+              <span className="block">
+                <GlitchText text="remember." />
+              </span>
+            </h1>
 
-            <div className="flex flex-col lg:items-end">
-              <GlitchText text="BUILD" className="block" aria-hidden />
-              <GlitchText text="PEOPLE" className="block" aria-hidden />
-              <p className="font-tight normal-case tracking-normal font-normal text-white/90 text-[13px] sm:text-[16px] leading-[1.68] max-w-[330px] mt-6 lg:mt-[0.55em] lg:self-end">
-                Awake is a creative digital studio in Warsaw. We design and build premium websites and web products
-                for founders and product teams who need to stand out.
-              </p>
-            </div>
+            <p className="font-tight mt-6 sm:mt-0 sm:absolute sm:right-0 sm:top-[calc(66.67%+34px)] max-w-[300px] text-[15px] leading-6 text-white">
+              Awake is a creative digital studio in Warsaw. We design and build
+              premium websites and web products for founders and product teams
+              who need to stand out.
+            </p>
           </div>
         </div>
 
         {/* Hairline (coin floor) */}
         <div
           ref={baselineRef}
-          className="relative z-10 w-full h-px bg-white/30 transition-opacity duration-300"
+          className="relative z-10 w-full h-px bg-white/40 transition-opacity duration-300"
           style={{ opacity: menuOpen ? 0 : 1 }}
         />
 
         {/* Bottom row */}
-        <div className="font-tight relative z-30 mt-8 sm:mt-[52px] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-[11px] sm:text-[15px] uppercase tracking-[0.01em]">
+        <div className="font-tight relative z-30 mt-6 sm:mt-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 sm:gap-2 text-[13px] sm:text-[15px] leading-6 uppercase tracking-[0.02em]">
           {menuOpen ? (
             <>
-              <a href={`mailto:${EMAIL}`} className="hover:opacity-80 transition-opacity">
-                <span className="text-white/75">SAY HELLO:&nbsp; </span>
-                <span className="font-medium">{EMAIL.toUpperCase()}</span>
+              <a
+                href={`mailto:${EMAIL}`}
+                className="hover:opacity-80 transition-opacity"
+              >
+                <span className="text-white/75">Say hello: </span>
+                <span>{EMAIL}</span>
               </a>
-              <div className="flex gap-10 font-medium">
-                <a href="#" className="hover:underline underline-offset-4">UPWORK</a>
-                <a href="#" className="hover:underline underline-offset-4">LINKEDIN</a>
+              <div className="flex gap-10">
+                <a href="#" className="hover:underline underline-offset-4">
+                  Upwork
+                </a>
+                <a href="#" className="hover:underline underline-offset-4">
+                  LinkedIn
+                </a>
               </div>
             </>
           ) : (
             <>
               <div>
-                <span className="text-white/75">BASED IN: </span>
-                <span className="font-medium">
-                  WARSAW <LiveWarsawClock /> · 8°C
+                <span className="text-white/75">Based in: </span>
+                <span>
+                  Warsaw <LiveWarsawClock /> · 8°C
                 </span>
               </div>
-              <a href={`mailto:${EMAIL}`} className="hover:opacity-80 transition-opacity">
-                <span className="text-white/75">SAY HELLO: </span>
-                <span className="font-medium">{EMAIL.toUpperCase()}</span>
+              <a
+                href={`mailto:${EMAIL}`}
+                className="hover:opacity-80 transition-opacity"
+              >
+                <span className="text-white/75">Say hello: </span>
+                <span>{EMAIL}</span>
               </a>
             </>
           )}

@@ -1,15 +1,16 @@
 @import "tailwindcss";
 
 :root {
-  --c-bg: #09090B;
-  --c-surface: #111115;
-  --c-border: #27272A;
-  --c-text: #F4F4F5;
-  --c-muted: #A1A1AA;
-  --c-dim: #3F3F46;
+  --c-bg: #ffffff;
+  --c-surface: #f1f1f3;
+  --c-border: #dbdcde;
+  --c-text: #161d25;
+  --c-muted: #5d646b;
+  --c-dim: #2d343b;
   --c-accent: #ff003d;
   --c-accent-hover: #e00036;
   --c-red: #ff003d;
+  --c-pink-line: #fcd3dd;
 }
 
 
@@ -23,6 +24,7 @@ html {
 body {
   background-color: var(--c-bg);
   color: var(--c-text);
+  font-family: var(--font-sans), "Helvetica Neue", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
@@ -99,11 +101,9 @@ html.lenis, html.lenis body {
   overflow: hidden;
 }
 
-/* Extended grotesk (hero headline, menu) */
+/* Display face (hero headline, statement, menu) */
 .font-wide {
-  font-family: var(--font-wide), "Helvetica Neue", Arial, sans-serif;
-  font-stretch: 112%;
-  font-variation-settings: "wdth" 112;
+  font-family: var(--font-display), "Helvetica Neue", Arial, sans-serif;
 }
 
 /* Neutral grotesk (logo, buttons, meta) */

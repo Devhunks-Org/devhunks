@@ -3,193 +3,122 @@
 import { useEffect, useState } from "react";
 import { getLenis } from "@/components/core/SmoothScroll";
 
-function LiveClock() {
+const EMAIL = "contact@awakeagency.dev";
+
+const NAV = [
+  { label: "Home", href: "#home" },
+  { label: "Services", href: "#services" },
+  { label: "Projects", href: "#projects" },
+  { label: "Contacts", href: "#contact" },
+];
+
+const SOCIAL = [
+  { label: "LinkedIn", href: "#" },
+  { label: "Upwork", href: "#" },
+];
+
+function WarsawTime() {
   const [time, setTime] = useState("");
   useEffect(() => {
-    const update = () => {
-      const now = new Date();
+    const update = () =>
       setTime(
-        now.toLocaleTimeString("en-GB", {
+        new Date().toLocaleTimeString("en-GB", {
           timeZone: "Europe/Warsaw",
           hour: "2-digit",
           minute: "2-digit",
-          second: "2-digit",
           hour12: false,
         })
       );
-    };
     update();
-    const id = setInterval(update, 1000);
+    const id = setInterval(update, 10000);
     return () => clearInterval(id);
   }, []);
   return <span suppressHydrationWarning>{time}</span>;
 }
 
 export default function Footer() {
-  const handleBackToTop = () => {
-    const lenis = getLenis();
-    if (lenis) {
-      lenis.scrollTo(0, { duration: 1.6, easing: (t: number) => 1 - Math.pow(1 - t, 4) });
-    } else {
-      window.scrollTo({ top: 0, behavior: "smooth" });
+  const [copied, setCopied] = useState(false);
+
+  const copyEmail = async (e: React.MouseEvent) => {
+    try {
+      await navigator.clipboard.writeText(EMAIL);
+      e.preventDefault();
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch {
+      // Clipboard unavailable — fall through to the mailto link
     }
   };
 
-  const navLinks = [
-    { label: "Home", href: "/" },
-    { label: "Services", href: "#services" },
-    { label: "Projects", href: "#projects" },
-    { label: "Contacts", href: "mailto:contact@awakeagency.dev" },
-  ];
-
-  const socialLinks = [
-    { label: "LinkedIn", href: "https://linkedin.com" },
-    { label: "Upwork", href: "https://upwork.com" },
-  ];
+  const scrollTo = (e: React.MouseEvent, href: string) => {
+    const lenis = getLenis();
+    const target = href === "#home" ? 0 : (document.querySelector(href) as HTMLElement | null);
+    if (!lenis || target === null) return;
+    e.preventDefault();
+    lenis.scrollTo(target, { duration: 1.4 });
+  };
 
   return (
-    <footer
-      className="w-full px-6 md:px-12 pt-20 pb-8"
-      style={{
-        backgroundColor: "var(--c-bg)",
-        borderTop: "1px solid var(--c-border)",
-      }}
-    >
-      {/* Top row */}
-      <div className="flex flex-col lg:flex-row gap-12 justify-between mb-20">
-        {/* Left — wordmark + tagline */}
-        <div className="flex flex-col gap-4">
-          <span
-            className="text-[clamp(3rem,8vw,6rem)] font-light leading-none tracking-[-0.04em]"
-            style={{ fontFamily: "var(--font-display, sans-serif)", color: "var(--c-text)" }}
-          >
-            AWAKE.
-          </span>
-          <p
-            className="text-[11px] uppercase tracking-[0.12em] max-w-xs"
-            style={{ fontFamily: "var(--font-mono, monospace)", color: "var(--c-muted)" }}
-          >
-            Creative digital studio in Warsaw.
-            <br />
-            Premium websites and web products.
-          </p>
-        </div>
+    <footer className="w-full bg-white px-2.5 sm:px-5 pb-2.5 sm:pb-5">
+      <div className="font-tight bg-[#161d25] text-white rounded-[24px] sm:rounded-[32px] p-6 sm:p-10 min-h-[436px] flex flex-col justify-between gap-14">
+        <div className="grid grid-cols-2 md:grid-cols-[479fr_253fr_384fr_204fr] gap-y-10 gap-x-6">
+          <a href="#home" onClick={(e) => scrollTo(e, "#home")} className="col-span-2 md:col-span-1 text-[40px] leading-none tracking-[-0.03em]">
+            awake.
+          </a>
 
-        {/* Right — nav + social + contact */}
-        <div className="flex flex-wrap gap-16">
-          {/* Navigation */}
-          <div className="flex flex-col gap-3">
-            <span
-              className="text-[9px] uppercase tracking-[0.2em] mb-2"
-              style={{ fontFamily: "var(--font-mono, monospace)", color: "var(--c-dim)" }}
-            >
-              Navigation
-            </span>
-            {navLinks.map(({ label, href }) => (
-              <a
-                key={label}
-                href={href}
-                className="text-[12px] uppercase tracking-[0.1em] transition-colors"
-                style={{ fontFamily: "var(--font-mono, monospace)", color: "var(--c-muted)" }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = "var(--c-text)")}
-                onMouseLeave={(e) => (e.currentTarget.style.color = "var(--c-muted)")}
-              >
-                {label}
-              </a>
+          <ul className="flex flex-col gap-2.5 text-[18px] leading-none">
+            {NAV.map((l) => (
+              <li key={l.label}>
+                <a href={l.href} onClick={(e) => scrollTo(e, l.href)} className="hover:opacity-60 transition-opacity">
+                  {l.label}
+                </a>
+              </li>
             ))}
-          </div>
+          </ul>
 
-          {/* Social */}
-          <div className="flex flex-col gap-3">
-            <span
-              className="text-[9px] uppercase tracking-[0.2em] mb-2"
-              style={{ fontFamily: "var(--font-mono, monospace)", color: "var(--c-dim)" }}
-            >
-              Social
-            </span>
-            {socialLinks.map(({ label, href }) => (
-              <a
-                key={label}
-                href={href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[12px] uppercase tracking-[0.1em] transition-colors"
-                style={{ fontFamily: "var(--font-mono, monospace)", color: "var(--c-muted)" }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = "var(--c-accent)")}
-                onMouseLeave={(e) => (e.currentTarget.style.color = "var(--c-muted)")}
-              >
-                {label} ↗
-              </a>
+          <ul className="flex flex-col gap-2.5 text-[18px] leading-none">
+            {SOCIAL.map((l) => (
+              <li key={l.label}>
+                <a href={l.href} className="hover:opacity-60 transition-opacity">
+                  {l.label}
+                </a>
+              </li>
             ))}
-          </div>
+          </ul>
 
-          {/* Contact */}
-          <div className="flex flex-col gap-3">
-            <span
-              className="text-[9px] uppercase tracking-[0.2em] mb-2"
-              style={{ fontFamily: "var(--font-mono, monospace)", color: "var(--c-dim)" }}
-            >
-              Contact
-            </span>
-            <a
-              href="mailto:contact@awakeagency.dev"
-              className="text-[12px] tracking-[0.05em] transition-colors"
-              style={{ fontFamily: "var(--font-mono, monospace)", color: "var(--c-muted)" }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "var(--c-accent)")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "var(--c-muted)")}
-            >
-              contact@awakeagency.dev
-            </a>
-            <div className="flex flex-col gap-1 mt-2">
-              <span
-                className="text-[9px] uppercase tracking-[0.15em]"
-                style={{ fontFamily: "var(--font-mono, monospace)", color: "var(--c-dim)" }}
-              >
-                Warsaw time
-              </span>
-              <span
-                className="text-[12px] tabular-nums"
-                style={{ fontFamily: "var(--font-mono, monospace)", color: "var(--c-accent)" }}
-              >
-                <LiveClock />
-              </span>
+          <div className="col-span-2 md:col-span-1 flex flex-col gap-8">
+            <div>
+              <p className="text-[15px] leading-none text-white/45">Contact us</p>
+              <a href={`mailto:${EMAIL}`} onClick={copyEmail} className="mt-2 inline-block text-[18px] leading-none hover:opacity-60 transition-opacity">
+                {copied ? "Copied to clipboard." : EMAIL}
+              </a>
+            </div>
+            <div>
+              <p className="text-[15px] leading-none text-white/45">Based in</p>
+              <p className="mt-2 text-[18px] leading-none">
+                Warsaw <WarsawTime /> · 8°C
+              </p>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Bottom bar */}
-      <div
-        className="flex flex-wrap items-center justify-between gap-4 pt-6"
-        style={{ borderTop: "1px solid var(--c-border)" }}
-      >
-        <p
-          className="text-[10px] uppercase tracking-[0.1em]"
-          style={{ fontFamily: "var(--font-mono, monospace)", color: "var(--c-dim)" }}
-        >
-          © Awake 2026. All rights reserved.{" "}
-          <a href="#" className="hover:text-gray-400 transition-colors">Privacy</a>
-          {" / "}
-          <a href="#" className="hover:text-gray-400 transition-colors">Cookies</a>
-          {" / "}
-          <a href="#" className="hover:text-gray-400 transition-colors">Terms</a>
-        </p>
-
-        <button
-          onClick={handleBackToTop}
-          className="text-[10px] uppercase tracking-[0.18em] flex items-center gap-2 transition-colors"
-          style={{
-            fontFamily: "var(--font-mono, monospace)",
-            color: "var(--c-muted)",
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = "var(--c-accent)")}
-          onMouseLeave={(e) => (e.currentTarget.style.color = "var(--c-muted)")}
-        >
-          [ BACK TO TOP ↑ ]
-        </button>
+        <div className="grid grid-cols-2 md:grid-cols-[479fr_253fr_384fr_204fr] gap-y-6 gap-x-6 items-end">
+          <p className="col-span-2 md:col-span-1 text-[15px] leading-none order-3 md:order-none">
+            © Awake {new Date().getFullYear()}. All rights reserved.
+          </p>
+          <div className="flex gap-4 text-[12px] leading-none uppercase tracking-[0.06em]">
+            <a href="#" className="hover:opacity-60 transition-opacity">Privacy</a>
+            <a href="#" className="hover:opacity-60 transition-opacity">Cookies</a>
+            <a href="#" className="hover:opacity-60 transition-opacity">Terms</a>
+          </div>
+          <span className="hidden md:block" />
+          <a href="#home" onClick={(e) => scrollTo(e, "#home")} className="justify-self-end md:justify-self-start inline-flex items-center gap-2 text-[15px] leading-none hover:opacity-60 transition-opacity">
+            Back to top
+            <svg width="10" height="12" viewBox="0 0 10 12" aria-hidden="true">
+              <path d="M5 11 V1 M1 5 L5 1 L9 5" stroke="currentColor" strokeWidth="1.4" fill="none" />
+            </svg>
+          </a>
+        </div>
       </div>
     </footer>
   );

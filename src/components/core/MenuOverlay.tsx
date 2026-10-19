@@ -152,7 +152,7 @@ export default function MenuOverlay({ isOpen, onClose }: MenuOverlayProps) {
                 onClick={(e) => handleNavClick(e, item.href)}
                 onMouseEnter={() => setHoveredIndex(i)}
                 onMouseLeave={() => setHoveredIndex(null)}
-                className="font-wide relative flex items-center text-white uppercase leading-none font-[460] text-[clamp(2rem,2.8vw,3.3rem)] tracking-[-0.005em] transition-transform duration-300 ease-out"
+                className="font-wide relative flex items-center text-white uppercase leading-none font-medium text-[clamp(2rem,3.05vw,3.6rem)] tracking-[-0.01em] transition-transform duration-300 ease-out"
                 style={{ transform: isHovered ? "translateX(8px)" : "translateX(0)" }}
               >
                 <span

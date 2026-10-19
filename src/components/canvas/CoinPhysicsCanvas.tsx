@@ -83,14 +83,14 @@ export default function CoinPhysicsCanvas({ floorOffset = 116, dropKey = 0, paus
 
     let coins: Coin[] = [];
 
-    const coinRadius = () => Math.max(17, Math.min(36, width * 0.0185));
+    const coinRadius = () => (width < 768 ? 30 : Math.max(22, Math.min(36, width * 0.0215)));
 
     const drop = () => {
       coins.forEach((c) => Composite.remove(world, c.body));
       coins = [];
 
       const radius = coinRadius();
-      const count = width < 768 ? 16 : Math.min(36, Math.round(width / 52));
+      const count = width < 768 ? 9 : Math.min(36, Math.round(width / 48));
 
       for (let i = 0; i < count; i++) {
         const x = radius + Math.random() * (width - radius * 2);

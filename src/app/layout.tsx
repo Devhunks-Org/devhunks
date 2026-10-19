@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Syne, JetBrains_Mono, Plus_Jakarta_Sans, Archivo, Inter_Tight } from "next/font/google";
+import { Syne, JetBrains_Mono, Plus_Jakarta_Sans, Inter_Tight } from "next/font/google";
 import "./globals.css";
 import SmoothScroll from "@/components/core/SmoothScroll";
 
@@ -14,14 +14,6 @@ const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
   variable: "--font-grotesque",
-  display: "swap",
-});
-
-// Extended grotesk used for the hero headline + menu (wdth axis drives the wide look)
-const archivo = Archivo({
-  subsets: ["latin"],
-  axes: ["wdth"],
-  variable: "--font-wide",
   display: "swap",
 });
 
@@ -66,7 +58,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${syne.variable} ${jakarta.variable} ${jetbrainsMono.variable} ${archivo.variable} ${interTight.variable}`}>
+    <html lang="en" className={`${syne.variable} ${jakarta.variable} ${jetbrainsMono.variable} ${interTight.variable}`}>
       <body>
         <SmoothScroll>{children}</SmoothScroll>
       </body>
