@@ -78,7 +78,7 @@ export default function MenuOverlay({ isOpen, onClose }: MenuOverlayProps) {
       <div className="h-10" />
 
       {/* Center Nav List */}
-      <nav className="flex flex-col gap-3 sm:gap-5 self-end w-full max-w-xl pr-4 sm:pr-12 z-10">
+      <nav className="flex flex-col gap-3 sm:gap-4 self-end w-full max-w-2xl pr-4 sm:pr-8 md:pr-12 z-10">
         {MENU_ITEMS.map((item, i) => {
           const isHovered = hoveredIndex === i;
           return (
@@ -101,9 +101,9 @@ export default function MenuOverlay({ isOpen, onClose }: MenuOverlayProps) {
               <div className="flex items-center gap-3">
                 {isHovered && <span className="text-white text-3xl font-light leading-none">—</span>}
                 <span
-                  className="text-[clamp(2.4rem,5.5vw,5rem)] font-extrabold tracking-[-0.03em] leading-none transition-colors"
+                  className="text-[clamp(2.2rem,4.2vw,4.4rem)] font-extrabold tracking-[-0.035em] leading-none transition-colors uppercase"
                   style={{
-                    fontFamily: 'var(--font-display, "Syne", sans-serif)',
+                    fontFamily: 'var(--font-grotesque, "Plus Jakarta Sans", sans-serif)',
                     color: isHovered ? "#FFFFFF" : "rgba(255, 255, 255, 0.92)",
                   }}
                 >
