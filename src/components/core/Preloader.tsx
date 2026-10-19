@@ -14,29 +14,37 @@ export default function Preloader({ onComplete }: PreloaderProps) {
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
-    if (!overlayRef.current || !counterRef.current || !lineRef.current) return;
+    if (!overlayRef.current) return;
 
-    const obj = { val: 0 };
-
-    const tl = gsap.timeline({
-      onComplete: () => {
-        // Slide overlay up
+    let finished = false;
+    const complete = () => {
+      if (finished) return;
+      finished = true;
+      if (overlayRef.current) {
         gsap.to(overlayRef.current, {
           yPercent: -100,
-          duration: 0.9,
-          ease: "expo.inOut",
+          duration: 0.6,
+          ease: "power3.inOut",
           onComplete: () => {
             setVisible(false);
             onComplete();
           },
         });
-      },
+      } else {
+        setVisible(false);
+        onComplete();
+      }
+    };
+
+    const obj = { val: 0 };
+    const tl = gsap.timeline({
+      onComplete: complete,
     });
 
     tl.to(obj, {
       val: 100,
-      duration: 1.8,
-      ease: "power3.inOut",
+      duration: 0.9,
+      ease: "power2.out",
       onUpdate: () => {
         const pct = Math.round(obj.val);
         if (counterRef.current) {
@@ -48,7 +56,11 @@ export default function Preloader({ onComplete }: PreloaderProps) {
       },
     });
 
+    // Auto-dismiss safety timeout
+    const timer = setTimeout(complete, 1600);
+
     return () => {
+      clearTimeout(timer);
       tl.kill();
     };
   }, [onComplete]);
@@ -58,8 +70,22 @@ export default function Preloader({ onComplete }: PreloaderProps) {
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-[100] flex flex-col items-center justify-center"
+      className="fixed inset-0 z-[100] flex flex-col items-center justify-center cursor-pointer select-none"
       style={{ backgroundColor: "var(--c-bg)" }}
+      title="Click to enter"
+      onClick={() => {
+        if (overlayRef.current) {
+          gsap.to(overlayRef.current, {
+            yPercent: -100,
+            duration: 0.4,
+            ease: "power2.inOut",
+            onComplete: () => {
+              setVisible(false);
+              onComplete();
+            },
+          });
+        }
+      }}
     >
       {/* Counter */}
       <div className="relative flex flex-col items-center gap-8 w-full px-12">

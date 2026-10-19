@@ -23,8 +23,8 @@ function Coins() {
     return Array.from({ length: COIN_COUNT }, (_, i) => ({
       key: `coin-${i}`,
       position: [
-        (Math.random() - 0.5) * 6,
-        4 + Math.random() * 8,
+        (Math.random() - 0.5) * 5.5,
+        -2.2 + Math.random() * 7,
         (Math.random() - 0.5) * 1.2,
       ] as [number, number, number],
       rotation: [
@@ -45,9 +45,9 @@ function Coins() {
       <instancedMesh ref={meshRef} args={[undefined, undefined, COIN_COUNT]} castShadow>
         <cylinderGeometry args={[0.55, 0.55, 0.12, 32]} />
         <meshStandardMaterial
-          color="#18181b"
-          metalness={0.92}
-          roughness={0.18}
+          color="#3f3f46"
+          metalness={0.88}
+          roughness={0.22}
         />
       </instancedMesh>
     </InstancedRigidBodies>
@@ -76,17 +76,17 @@ function Scene() {
   return (
     <>
       {/* Lighting */}
-      <ambientLight intensity={0.3} />
+      <ambientLight intensity={0.9} />
       <pointLight
-        position={[2, 4, 2]}
+        position={[2, 2, 3]}
         color="#EF4444"
-        intensity={40}
-        distance={12}
+        intensity={60}
+        distance={15}
       />
       <directionalLight
-        position={[-4, 6, -2]}
-        color="#60a5fa"
-        intensity={1.5}
+        position={[-3, 5, 3]}
+        color="#f4f4f5"
+        intensity={2.8}
       />
       <Environment preset="city" />
 

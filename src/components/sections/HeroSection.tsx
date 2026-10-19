@@ -14,10 +14,11 @@ const CoinPileCanvas = dynamic(() => import("@/components/three/CoinPileCanvas")
 });
 
 const HEADLINE_PARTS = [
-  { text: "We build", accent: false },
-  { text: " websites", accent: false },
-  { text: " people", accent: true },
-  { text: " remember.", accent: true },
+  { text: "We", accent: false },
+  { text: "build", accent: false },
+  { text: "websites", accent: false },
+  { text: "people", accent: true },
+  { text: "remember.", accent: true },
 ];
 
 interface HeroSectionProps {
@@ -70,29 +71,31 @@ export default function HeroSection({ ready }: HeroSectionProps) {
     { scope: sectionRef, dependencies: [ready] }
   );
 
-  // Build character spans
+  // Build character spans preserving words
   const buildChars = () => {
     let idx = 0;
-    return HEADLINE_PARTS.map((part, pi) =>
-      part.text.split("").map((char, ci) => {
-        const i = idx++;
-        return (
-          <span
-            key={`${pi}-${ci}`}
-            ref={(el) => {
-              if (el) charsRef.current[i] = el;
-            }}
-            className="char"
-            style={{
-              color: part.accent ? "var(--c-accent)" : "var(--c-text)",
-              display: "inline-block",
-            }}
-          >
-            {char === " " ? "\u00A0" : char}
-          </span>
-        );
-      })
-    );
+    return HEADLINE_PARTS.map((part, pi) => (
+      <span key={pi} className="inline-block whitespace-nowrap mr-[0.25em]">
+        {part.text.trim().split("").map((char, ci) => {
+          const i = idx++;
+          return (
+            <span
+              key={`${pi}-${ci}`}
+              ref={(el) => {
+                if (el) charsRef.current[i] = el;
+              }}
+              className="char"
+              style={{
+                color: part.accent ? "var(--c-accent)" : "var(--c-text)",
+                display: "inline-block",
+              }}
+            >
+              {char}
+            </span>
+          );
+        })}
+      </span>
+    ));
   };
 
   return (
@@ -108,32 +111,34 @@ export default function HeroSection({ ready }: HeroSectionProps) {
       </div>
 
       {/* Foreground UI — pointer-events-none */}
-      <div className="relative z-10 flex flex-col justify-end min-h-screen pb-16 px-6 md:px-12 pointer-events-none">
-        {/* Headline */}
-        <h1
-          ref={headlineRef}
-          className="text-[clamp(2.8rem,8vw,7.5rem)] font-light leading-[1.0] tracking-[-0.04em] mb-6 max-w-[18ch]"
-          style={{ fontFamily: "var(--font-display, sans-serif)" }}
-          aria-label="We build websites people remember."
-        >
-          <span aria-hidden="true">{buildChars()}</span>
-        </h1>
+      <div className="relative z-10 flex flex-col justify-between min-h-screen pt-32 pb-12 px-6 md:px-12 pointer-events-none">
+        <div className="max-w-5xl">
+          {/* Headline */}
+          <h1
+            ref={headlineRef}
+            className="text-[clamp(2.4rem,6.5vw,5.8rem)] font-light leading-[1.05] tracking-[-0.04em] mb-8"
+            style={{ fontFamily: "var(--font-display, sans-serif)" }}
+            aria-label="We build websites people remember."
+          >
+            <span aria-hidden="true">{buildChars()}</span>
+          </h1>
 
-        {/* Subcopy */}
-        <p
-          ref={subRef}
-          className="max-w-lg text-[clamp(0.9rem,1.5vw,1.1rem)] leading-relaxed mb-10 opacity-0"
-          style={{ color: "var(--c-muted)" }}
-        >
-          Awake is a creative digital studio in Warsaw. We design and build premium
-          websites and web products for founders and product teams who need to stand out.
-        </p>
+          {/* Subcopy */}
+          <p
+            ref={subRef}
+            className="max-w-xl text-[clamp(0.95rem,1.5vw,1.15rem)] leading-relaxed"
+            style={{ color: "var(--c-muted)" }}
+          >
+            Awake is a creative digital studio in Warsaw. We design and build premium
+            websites and web products for founders and product teams who need to stand out.
+          </p>
+        </div>
 
         {/* Studio Metadata */}
         <div
           ref={metaRef}
-          className="flex flex-wrap gap-8 opacity-0"
-          style={{ borderTop: "1px solid var(--c-border)", paddingTop: "1.25rem" }}
+          className="flex flex-wrap gap-8 md:gap-16 pt-6"
+          style={{ borderTop: "1px solid var(--c-border)" }}
         >
           <div className="flex flex-col gap-1">
             <span

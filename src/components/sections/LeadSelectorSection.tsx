@@ -33,7 +33,9 @@ function Marquee({ direction = 1, speed = 1 }: { direction?: 1 | -1; speed?: num
       },
     });
 
-    return () => tweenRef.current?.kill();
+    return () => {
+      tweenRef.current?.kill();
+    };
   }, [direction, speed]);
 
   // Expose speed update via imperative handle

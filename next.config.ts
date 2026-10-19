@@ -4,6 +4,8 @@ const nextConfig: NextConfig = {
   // Allow Three.js / R3F to work in the browser bundle
   transpilePackages: ["three", "@react-three/fiber", "@react-three/drei", "@react-three/rapier"],
 
+  turbopack: {},
+
   // Webpack tweaks for WASM (Rapier physics engine)
   webpack: (config, { isServer }) => {
     // Rapier uses WASM
