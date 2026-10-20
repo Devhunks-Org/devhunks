@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Syne, JetBrains_Mono, Plus_Jakarta_Sans, Inter_Tight } from "next/font/google";
 import "./globals.css";
 import SmoothScroll from "@/components/core/SmoothScroll";
+import { Analytics } from "@vercel/analytics/next";
 
 const syne = Syne({
   subsets: ["latin"],
@@ -61,6 +62,7 @@ export default function RootLayout({
     <html lang="en" className={`${syne.variable} ${jakarta.variable} ${jetbrainsMono.variable} ${interTight.variable}`}>
       <body suppressHydrationWarning>
         <SmoothScroll>{children}</SmoothScroll>
+        <Analytics />
       </body>
     </html>
   );
