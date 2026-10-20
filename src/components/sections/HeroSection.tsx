@@ -76,23 +76,31 @@ export default function HeroSection() {
     return () => window.removeEventListener(OPEN_MENU_EVENT, open);
   }, []);
 
-  // Headline drifts up and out as the menu takes over; returns once the menu has left
+  // Menu choreography: headline letters slip up out of their boxes, then rise back in once the
+  // menu has left. Same clipped boxes as the intro, so the motion reads as one system.
   const firstMenuRun = useRef(true);
   useEffect(() => {
-    const el = heroContentRef.current;
-    if (!el) return;
+    const content = heroContentRef.current;
+    if (!content) return;
     if (firstMenuRun.current) {
       firstMenuRun.current = false;
       return;
     }
+    const letters = content.querySelectorAll("h1 [data-inner]");
+    const para = content.querySelector("p");
+
     if (menuOpen) {
-      gsap.to(el, { autoAlpha: 0, y: -28, duration: 0.6, ease: "power3.inOut", overwrite: true });
+      content.style.pointerEvents = "none";
+      gsap
+        .timeline({ defaults: { overwrite: "auto" } })
+        .to(letters, { yPercent: -108, duration: 0.6, ease: "power3.in", stagger: { each: 0.012 } }, 0)
+        .to(para, { autoAlpha: 0, y: -12, duration: 0.45, ease: "power2.in" }, 0);
     } else {
-      gsap.fromTo(
-        el,
-        { autoAlpha: 0, y: 28 },
-        { autoAlpha: 1, y: 0, duration: 1, delay: 0.4, ease: "expo.out", overwrite: true }
-      );
+      content.style.pointerEvents = "";
+      gsap
+        .timeline({ defaults: { overwrite: "auto" }, delay: 0.42 })
+        .fromTo(letters, { yPercent: 108 }, { yPercent: 0, duration: 1.15, ease: "expo.out", stagger: { each: 0.018 } }, 0)
+        .fromTo(para, { autoAlpha: 0, y: 14 }, { autoAlpha: 1, y: 0, duration: 0.9, ease: "power3.out" }, 0.25);
     }
   }, [menuOpen]);
 
@@ -136,36 +144,29 @@ export default function HeroSection() {
               aria-label={menuOpen ? "Close menu" : "Open menu"}
               aria-expanded={menuOpen}
             >
-              <span>{menuOpen ? "close." : "menu."}</span>
-              {menuOpen ? (
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 16 16"
-                  aria-hidden="true"
+              {/* Label rolls between "menu." and "close." */}
+              <span className="relative block h-[1.25em] overflow-hidden leading-[1.25em]">
+                <span
+                  className="block transition-transform duration-700 ease-[var(--e-out)]"
+                  style={{ transform: menuOpen ? "translateY(-50%)" : "translateY(0)" }}
                 >
-                  <path
-                    d="M2 2 L14 14 M14 2 L2 14"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              ) : (
-                <svg
-                  width="20"
-                  height="12"
-                  viewBox="0 0 20 12"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M6 3 H19 M1 9 H14"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              )}
+                  <span className="block">menu.</span>
+                  <span className="block" aria-hidden="true">
+                    close.
+                  </span>
+                </span>
+              </span>
+              {/* Two offset bars morph into an ✕ */}
+              <span className="relative block h-3 w-[18px]" aria-hidden="true">
+                <span
+                  className="absolute left-0 right-0 top-1/2 -mt-[0.9px] h-[1.8px] rounded-full bg-current transition-transform duration-700 ease-[var(--e-out)]"
+                  style={{ transform: menuOpen ? "rotate(45deg) scaleX(0.9)" : "translate(2.5px,-3px) scaleX(0.72)" }}
+                />
+                <span
+                  className="absolute left-0 right-0 top-1/2 -mt-[0.9px] h-[1.8px] rounded-full bg-current transition-transform duration-700 ease-[var(--e-out)]"
+                  style={{ transform: menuOpen ? "rotate(-45deg) scaleX(0.9)" : "translate(-2.5px,3px) scaleX(0.72)" }}
+                />
+              </span>
             </button>
           </div>
         </header>

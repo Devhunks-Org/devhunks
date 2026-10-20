@@ -117,8 +117,8 @@ export function MenuLetterStroke({ isOpen }: { isOpen: boolean }) {
       current = tl;
     };
 
-    gsap.fromTo(svg, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.6, delay: 0.3, ease: "power2.out" });
-    const startId = window.setTimeout(cycle, 350);
+    gsap.fromTo(svg, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.8, delay: 0.5, ease: "power2.out" });
+    const startId = window.setTimeout(cycle, 700);
 
     return () => {
       killed = true;
@@ -179,17 +179,22 @@ export default function MenuOverlay({ isOpen, onClose }: MenuOverlayProps) {
         exitRef.current = null;
         gsap
           .timeline({ defaults: { overwrite: "auto" } })
-          .fromTo(labels, { yPercent: 115 }, { yPercent: 0, duration: 1.1, stagger: 0.08, ease: "expo.out" }, 0.18)
+          .fromTo(
+            labels,
+            { yPercent: 115, rotate: 5, transformOrigin: "0% 100%" },
+            { yPercent: 0, rotate: 0, duration: 1.2, stagger: 0.075, ease: "expo.out" },
+            0.32
+          )
           .fromTo(
             indices,
             { autoAlpha: 0, y: 12 },
-            { autoAlpha: 1, y: 0, duration: 0.8, stagger: 0.08, ease: "power3.out" },
-            0.3
+            { autoAlpha: 1, y: 0, duration: 0.9, stagger: 0.075, ease: "power3.out" },
+            0.45
           );
       } else {
         exitRef.current = gsap
           .timeline({ defaults: { overwrite: "auto" }, onComplete: () => setRendered(false) })
-          .to(labels, { yPercent: -115, duration: 0.5, stagger: 0.05, ease: "power3.in" }, 0)
+          .to(labels, { yPercent: -115, rotate: -3, duration: 0.55, stagger: 0.045, ease: "power3.in" }, 0)
           .to(indices, { autoAlpha: 0, y: -10, duration: 0.35, stagger: 0.05, ease: "power2.in" }, 0);
       }
     },

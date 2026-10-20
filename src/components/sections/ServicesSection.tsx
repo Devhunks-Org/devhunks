@@ -124,7 +124,7 @@ export default function ServicesSection() {
           trigger: pin,
           start: () => `top top+=${frame()}`,
           end: () => `+=${window.innerHeight * 2.4}`,
-          scrub: 0.6,
+          scrub: 0.4,
           pin,
           anticipatePin: 1,
           invalidateOnRefresh: true,

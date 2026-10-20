@@ -101,7 +101,7 @@ export default function ManifestoSection() {
             trigger: sectionRef.current,
             start: "top 85%",
             end: "top top",
-            scrub: 0.6,
+            scrub: 0.35,
           },
         })
         .to(lines, { strokeDashoffset: 0, duration: 1, stagger: 0.04, ease: "none" }, 0)
@@ -114,7 +114,7 @@ export default function ManifestoSection() {
           trigger: sectionRef.current,
           start: () => `top top+=${parseFloat(getComputedStyle(document.documentElement).fontSize) * 1.25}`,
           end: "+=128%",
-          scrub: 0.8,
+          scrub: 0.4,
           pin: cardRef.current,
           invalidateOnRefresh: true,
         },

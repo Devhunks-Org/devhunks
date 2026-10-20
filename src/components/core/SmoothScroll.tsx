@@ -18,8 +18,14 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     const lenis = new Lenis({
-      lerp: 0.08,
+      // Frame-rate independent damping: a long, soft glide at 60/120/144Hz alike
+      lerp: 0.07,
       smoothWheel: true,
+      wheelMultiplier: 0.85,
+      // Touch keeps the device's native momentum (smoothest on phones)
+      syncTouch: false,
+      touchMultiplier: 1.2,
+      autoRaf: false,
     });
 
     lenisRef.current = lenis;
@@ -28,16 +34,16 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
     // The preloader locks scrolling until it hands over to the hero
     if (document.documentElement.dataset.loading) lenis.stop();
 
-    // Sync GSAP ScrollTrigger with Lenis
+    // ScrollTrigger reads Lenis' animated position, updated in the same frame
     lenis.on("scroll", ScrollTrigger.update);
 
-    // Add Lenis to GSAP ticker with clean removal
-    const updateTicker = (time: number) => {
-      lenis.raf(time * 1000);
-    };
-
+    // One clock for everything: Lenis + GSAP share the display's rAF (120Hz on 120Hz screens)
+    const updateTicker = (time: number) => lenis.raf(time * 1000);
     gsap.ticker.add(updateTicker);
     gsap.ticker.lagSmoothing(0);
+
+    // Mobile URL-bar show/hide shouldn't trigger a full ScrollTrigger recalculation mid-scroll
+    ScrollTrigger.config({ ignoreMobileResize: true });
 
     return () => {
       gsap.ticker.remove(updateTicker);

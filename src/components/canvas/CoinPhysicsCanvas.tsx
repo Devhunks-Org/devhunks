@@ -391,11 +391,16 @@ export default function CoinPhysicsCanvas({
       ctx.restore();
     };
 
+    // Skip all work while the hero is scrolled out of view (keeps scrolling frames free)
+    let onScreen = true;
+    const io = new IntersectionObserver(([entry]) => (onScreen = entry.isIntersecting), { rootMargin: "100px" });
+    io.observe(container);
+
     let raf = 0;
     let frame = 0;
     const loop = () => {
       raf = requestAnimationFrame(loop);
-      if (pausedRef.current) return;
+      if (pausedRef.current || !onScreen) return;
       frame++;
       const now = performance.now();
 
@@ -469,6 +474,7 @@ export default function CoinPhysicsCanvas({
 
     return () => {
       cancelAnimationFrame(raf);
+      io.disconnect();
       dropRef.current = null;
       setCursor("");
       window.removeEventListener("pointermove", onPointerMove);

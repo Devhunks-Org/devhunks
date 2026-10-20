@@ -160,21 +160,33 @@ function useScrollDraw(
         return deepest[0] > y ? 0 : lens[lo];
       };
 
-      gsap.set(path, { strokeDasharray: `0 ${total + 10}`, strokeDashoffset: 0 });
+      path.style.strokeDashoffset = "0";
+      path.style.strokeDasharray = `0 ${total + 10}`;
       const state = { drawn: 0 };
-      const apply = () => gsap.set(path, { strokeDasharray: `${state.drawn} ${total + 10}` });
+      const drawTo = gsap.quickTo(state, "drawn", {
+        duration: 0.7,
+        ease: "power3.out",
+        onUpdate: () => (path.style.strokeDasharray = `${state.drawn} ${total + 10}`),
+      });
+
+      // Document-space top of the drawing, measured on refresh only (no layout reads while scrolling)
+      let svgDocTop = 0;
+      const measure = () => (svgDocTop = path.ownerSVGElement!.getBoundingClientRect().top + window.scrollY);
+      measure();
+
+      const update = (scrollY: number) => drawTo(lengthForDepth(scrollY + window.innerHeight * reach - svgDocTop));
 
       const st = ScrollTrigger.create({
         trigger,
         start: "top bottom",
         end: "bottom top",
-        onUpdate: () => {
-          const svgTop = path.ownerSVGElement!.getBoundingClientRect().top;
-          const target = lengthForDepth(window.innerHeight * reach - svgTop);
-          gsap.to(state, { drawn: target, duration: 0.6, ease: "power2.out", overwrite: true, onUpdate: apply });
+        onRefresh: () => {
+          measure();
+          update(window.scrollY);
         },
+        onUpdate: (self) => update(self.scroll()),
       });
-      st.update?.();
+      update(window.scrollY);
 
       return () => st.kill();
     },
