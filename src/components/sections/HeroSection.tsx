@@ -48,12 +48,10 @@ export default function HeroSection() {
       const card = cardRef.current;
       if (!card) return;
       const q = gsap.utils.selector(card);
-      const words = q("[data-mask] > span");
       const header = q("[data-intro-header] > *");
       const fades = q("[data-intro-fade]");
       const line = baselineRef.current;
 
-      gsap.set(words, { yPercent: 115 });
       gsap.set(header, { autoAlpha: 0, y: -14 });
       gsap.set(fades, { autoAlpha: 0, y: 14 });
       gsap.set(line, { scaleX: 0, transformOrigin: "left center" });
@@ -61,12 +59,11 @@ export default function HeroSection() {
       return onPreloaderDone(() => {
         gsap
           .timeline({ defaults: { ease: "expo.out" } })
-          .to(words, { yPercent: 0, duration: 1.15, stagger: 0.07 }, 0)
           .to(header, { autoAlpha: 1, y: 0, duration: 0.9, stagger: 0.08 }, 0.1)
           .to(line, { scaleX: 1, duration: 1.4, ease: "power3.inOut" }, 0.2)
           .to(fades, { autoAlpha: 1, y: 0, duration: 0.9, stagger: 0.08 }, 0.45)
-          // Coins fall once the headline has landed
-          .call(() => setDropKey((k) => (k === 0 ? 1 : k)), undefined, 0.6);
+          // Coins start pouring in once the letters have appeared
+          .call(() => setDropKey((k) => (k === 0 ? 1 : k)), undefined, 0.9);
       });
     },
     { scope: cardRef }
@@ -79,14 +76,24 @@ export default function HeroSection() {
     return () => window.removeEventListener(OPEN_MENU_EVENT, open);
   }, []);
 
-  // Hero content fades out while the menu takes over the card
+  // Headline drifts up and out as the menu takes over; returns once the menu has left
+  const firstMenuRun = useRef(true);
   useEffect(() => {
-    if (!heroContentRef.current) return;
-    gsap.to(heroContentRef.current, {
-      autoAlpha: menuOpen ? 0 : 1,
-      duration: menuOpen ? 0.2 : 0.35,
-      ease: "power2.out",
-    });
+    const el = heroContentRef.current;
+    if (!el) return;
+    if (firstMenuRun.current) {
+      firstMenuRun.current = false;
+      return;
+    }
+    if (menuOpen) {
+      gsap.to(el, { autoAlpha: 0, y: -28, duration: 0.6, ease: "power3.inOut", overwrite: true });
+    } else {
+      gsap.fromTo(
+        el,
+        { autoAlpha: 0, y: 28 },
+        { autoAlpha: 1, y: 0, duration: 1, delay: 0.4, ease: "expo.out", overwrite: true }
+      );
+    }
   }, [menuOpen]);
 
   const toggleMenu = () => {
@@ -100,7 +107,7 @@ export default function HeroSection() {
       <div
         ref={cardRef}
         data-hero-card
-        className="relative w-full h-[calc(100svh-20px)] sm:h-[calc(100svh-40px)] min-h-[560px] bg-[#ff003d] text-white rounded-[24px] sm:rounded-[32px] overflow-hidden flex flex-col p-5 sm:p-10"
+        className="relative w-full h-[calc(100svh-20px)] sm:h-[calc(100svh-2.5rem)] min-h-[560px] bg-[#ff003d] text-white rounded-[24px] sm:rounded-[32px] overflow-hidden flex flex-col p-5 sm:p-10"
         style={{ isolation: "isolate" }}
       >
         {/* Menu background letter (behind everything) */}
@@ -165,13 +172,14 @@ export default function HeroSection() {
 
         {/* Coins */}
         <div
-          className="absolute inset-0 z-20 pointer-events-none transition-opacity duration-300"
-          style={{ opacity: menuOpen ? 0 : 1 }}
+          className="absolute inset-0 z-20 pointer-events-none transition-opacity duration-500 ease-[cubic-bezier(0.65,0,0.35,1)]"
+          style={{ opacity: menuOpen ? 0 : 1, transitionDelay: menuOpen ? "0ms" : "450ms" }}
         >
           <CoinPhysicsCanvas
             floorOffset={floorOffset}
             dropKey={dropKey}
             paused={menuOpen}
+            solidSelector="[data-glyph]"
           />
         </div>
 
@@ -186,25 +194,15 @@ export default function HeroSection() {
               className="font-wide uppercase font-medium text-white leading-none text-[6.9vw] sm:text-[7.64vw] min-[1800px]:text-[8.6rem]"
             >
               <span className="flex flex-wrap gap-x-[0.28em] sm:justify-between">
-                <span data-mask className="inline-block overflow-hidden align-top">
-                  <GlitchText text="We" className="inline-block" />
-                </span>
-                <span data-mask className="inline-block overflow-hidden align-top">
-                  <GlitchText text="build" className="inline-block" />
-                </span>
+                <GlitchText text="We" intro introDelay={0} />
+                <GlitchText text="build" intro introDelay={0.12} />
               </span>
               <span className="flex flex-wrap gap-x-[0.28em] sm:justify-between">
-                <span data-mask className="inline-block overflow-hidden align-top">
-                  <GlitchText text="websites" className="inline-block" />
-                </span>
-                <span data-mask className="inline-block overflow-hidden align-top">
-                  <GlitchText text="people" className="inline-block" />
-                </span>
+                <GlitchText text="websites" intro introDelay={0.22} />
+                <GlitchText text="people" intro introDelay={0.36} />
               </span>
               <span className="block">
-                <span data-mask className="inline-block overflow-hidden align-top">
-                  <GlitchText text="remember." className="inline-block" />
-                </span>
+                <GlitchText text="remember." intro introDelay={0.46} />
               </span>
             </h1>
 
@@ -219,45 +217,60 @@ export default function HeroSection() {
         {/* Hairline (coin floor) */}
         <div
           ref={baselineRef}
-          className="relative z-10 w-full h-px bg-white/40 transition-opacity duration-300"
-          style={{ opacity: menuOpen ? 0 : 1 }}
+          className="relative z-10 w-full h-px bg-white/40 transition-[opacity,transform] duration-700 ease-[cubic-bezier(0.65,0,0.35,1)] origin-left"
+          style={{
+            opacity: menuOpen ? 0 : 1,
+            transform: menuOpen ? "scaleX(0.6)" : "scaleX(1)",
+            transitionDelay: menuOpen ? "0ms" : "350ms",
+          }}
         />
 
-        {/* Bottom row */}
-        <div data-intro-fade className="font-tight relative z-30 mt-6 sm:mt-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 sm:gap-2 text-[13px] sm:text-[15px] leading-6 uppercase tracking-[0.02em]">
-          {menuOpen ? (
-            <>
-              <a
-                href={`mailto:${EMAIL}`}
-                className="hover:opacity-80 transition-opacity"
+        {/* Bottom row — hero meta and menu meta crossfade in the same spot */}
+        <div
+          data-intro-fade
+          className="font-tight relative z-30 mt-6 sm:mt-10 grid text-[13px] sm:text-[15px] leading-6 uppercase tracking-[0.02em]"
+        >
+          {[false, true].map((forMenu) => {
+            const active = forMenu === menuOpen;
+            return (
+              <div
+                key={String(forMenu)}
+                aria-hidden={!active}
+                className={`[grid-area:1/1] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 sm:gap-2 transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                  active ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"
+                }`}
+                style={{ transitionDelay: active ? "250ms" : "0ms" }}
               >
-                <span className="text-white/75">Say hello: </span>
-                <span>{EMAIL}</span>
-              </a>
-              <div className="flex gap-10">
-                <a href="#" className="hover:underline underline-offset-4">
-                  Upwork
-                </a>
-                <a href="#" className="hover:underline underline-offset-4">
-                  LinkedIn
-                </a>
+                {forMenu ? (
+                  <>
+                    <a href={`mailto:${EMAIL}`} tabIndex={active ? 0 : -1} className="hover:opacity-80 transition-opacity">
+                      <span className="text-white/75">Say hello: </span>
+                      <span>{EMAIL}</span>
+                    </a>
+                    <div className="flex gap-10">
+                      <a href={SITE.links.upwork} tabIndex={active ? 0 : -1} className="hover:underline underline-offset-4">
+                        Upwork
+                      </a>
+                      <a href={SITE.links.linkedin} tabIndex={active ? 0 : -1} className="hover:underline underline-offset-4">
+                        LinkedIn
+                      </a>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div>
+                      <span className="text-white/75">Based in: </span>
+                      <span>{SITE.location}</span>
+                    </div>
+                    <a href={`mailto:${EMAIL}`} tabIndex={active ? 0 : -1} className="hover:opacity-80 transition-opacity">
+                      <span className="text-white/75">Say hello: </span>
+                      <span>{EMAIL}</span>
+                    </a>
+                  </>
+                )}
               </div>
-            </>
-          ) : (
-            <>
-              <div>
-                <span className="text-white/75">Based in: </span>
-                <span>{SITE.location}</span>
-              </div>
-              <a
-                href={`mailto:${EMAIL}`}
-                className="hover:opacity-80 transition-opacity"
-              >
-                <span className="text-white/75">Say hello: </span>
-                <span>{EMAIL}</span>
-              </a>
-            </>
-          )}
+            );
+          })}
         </div>
 
         <MenuOverlay isOpen={menuOpen} onClose={toggleMenu} />

@@ -1,303 +1,386 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 
 gsap.registerPlugin(ScrollTrigger);
 
-type Visual = "smoke" | "workspace" | "investor" | "studio";
+type Visual = "mihailove" | "frame" | "portfolio" | "manypixels";
 
-const FEATURED_PROJECTS: {
-  title: string;
-  tag: string;
-  visual: Visual;
-  // Desktop placement inside the 1440 x 1750 canvas, expressed in vw
-  left: string;
-  top: string;
-}[] = [
-  { title: "Mihailove", tag: "Development", visual: "smoke", left: "8.9vw", top: "5vw" },
-  { title: "Frame", tag: "Development", visual: "workspace", left: "66.2vw", top: "20.4vw" },
-  { title: "Portfolio Ventures", tag: "Branding", visual: "investor", left: "15.35vw", top: "63.4vw" },
-  { title: "Manypixels", tag: "Development", visual: "studio", left: "57.1vw", top: "80.2vw" },
+// Placement on the ≥1440px stage, in vw (reference: 1440 × 1749 stage)
+const FEATURED_PROJECTS: { title: string; tag: string; visual: Visual; x: string; y: string }[] = [
+  { title: "Mihailove", tag: "Development", visual: "mihailove", x: "8.889vw", y: "4.948vw" },
+  { title: "Frame", tag: "Development", visual: "frame", x: "66.181vw", y: "20.43vw" },
+  { title: "Portfolio Ventures", tag: "Branding", visual: "portfolio", x: "15.347vw", y: "63.387vw" },
+  { title: "Manypixels", tag: "Development", visual: "manypixels", x: "57.097vw", y: "80.269vw" },
 ];
 
 const ARCHIVE_PROJECTS = [
-  { title: "Condor", scope: "Development", year: "2026", preview: "linear-gradient(160deg,#0f172a,#334155)" },
-  { title: "Cortland", scope: "Web design", year: "2026", preview: "linear-gradient(160deg,#fde68a,#f59e0b)" },
-  { title: "Rally", scope: "Development", year: "2025", preview: "linear-gradient(160deg,#a7f3d0,#059669)" },
-  { title: "Rhinestone", scope: "Development", year: "2025", preview: "linear-gradient(160deg,#c4b5fd,#6d28d9)" },
-  { title: "Ezra", scope: "Development", year: "2024", preview: "linear-gradient(160deg,#fecdd3,#e11d48)" },
+  { title: "Condor", scope: "Development", year: "2026", bg: "linear-gradient(160deg,#3b1a78,#1f0b4a)" },
+  { title: "Cortland", scope: "Web design", year: "2026", bg: "linear-gradient(160deg,#4b5563,#1f2937)" },
+  { title: "Rally", scope: "Development", year: "2025", bg: "linear-gradient(160deg,#3f7d4a,#1d4d2b)" },
+  { title: "Rhinestone", scope: "Development", year: "2025", bg: "linear-gradient(160deg,#111,#000)" },
+  { title: "Ezra", scope: "Development", year: "2024", bg: "linear-gradient(160deg,#f2701e,#e0550c)" },
 ];
 
-// Hand-drawn thread that loops around the cards (viewBox 1440 x 1750)
+/**
+ * Thread around the featured cards, drawn in a 1440 × 1749 space.
+ * Scaled to real pixels at runtime so dashes are exact and the stroke stays 32px.
+ */
 const THREAD_PATH =
-  "M -60 20 C 40 10 80 70 110 70 C 150 70 170 -50 300 -60 C 470 -70 590 90 590 290 C 590 490 455 610 320 610 C 175 610 55 490 55 300 C 55 195 110 120 205 112 C 425 95 705 245 835 385 C 905 465 885 565 765 645 C 645 725 425 765 305 885 C 165 1025 165 1265 305 1345 C 465 1435 645 1305 605 1185 C 565 1065 385 1125 425 1265 C 475 1445 765 1505 905 1605 C 1005 1685 1105 1745 1520 1725";
+  "M -60 40 C 20 40 60 -20 140 -40 C 260 -70 520 -40 590 160 C 650 330 560 560 360 610 C 170 655 40 520 50 340 C 60 150 220 30 400 40 C 600 52 800 170 900 260 C 960 315 930 360 900 420 C 860 500 880 560 940 600 C 870 680 640 760 520 860 C 640 900 700 1050 660 1200 C 610 1390 430 1460 300 1400 C 150 1330 110 1110 230 980 C 340 860 540 880 640 980 C 760 1100 900 1300 1080 1430 C 1220 1530 1380 1560 1520 1540";
 
-// Scribble behind the archive list (viewBox 1400 x 580)
+/** Scribble behind the archive list, drawn in a 1400 × 580 box. */
 const SCRIBBLE_PATH =
-  "M 1460 26 C 1300 36 1150 48 1040 54 C 900 62 760 64 735 80 C 705 100 920 128 920 154 C 920 180 732 204 732 230 C 732 256 920 280 920 306 C 920 334 800 360 730 382 C 650 406 590 424 500 438 C 400 454 220 470 140 472 C 100 473 130 455 126 448 C 118 434 98 426 82 428 C 60 431 42 450 41 476 C 40 502 52 522 64 532";
+  "M 1460 30 C 1250 40 900 50 760 70 C 640 90 900 120 900 150 C 900 185 700 200 700 235 C 700 270 900 285 900 320 C 900 360 760 380 620 410 C 460 445 240 470 120 470 C 70 470 40 445 50 420 C 60 395 100 400 105 425 C 112 460 80 500 50 520";
 
-function ProjectVisual({ visual, title }: { visual: Visual; title: string }) {
-  if (visual === "smoke") {
-    return (
-      <div className="absolute inset-0 flex items-center justify-center bg-[radial-gradient(ellipse_at_30%_20%,#5b5e45_0%,#2b2d22_45%,#141510_100%)]">
-        <div className="absolute inset-0 opacity-50 bg-[radial-gradient(circle_at_70%_70%,rgba(255,255,255,0.18),transparent_40%),radial-gradient(circle_at_20%_80%,rgba(255,255,255,0.12),transparent_35%)]" />
-        <span className="relative font-tight text-white text-[clamp(1.5rem,2.6vw,2.4rem)] font-semibold tracking-[-0.02em] uppercase">
-          {title}
-        </span>
-      </div>
-    );
-  }
-  if (visual === "workspace") {
-    return (
-      <div className="absolute inset-0 bg-[#060606] bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:22px_22px] flex items-center justify-center p-[8%]">
-        <div className="w-full rounded-lg border border-white/15 bg-[#111] p-[8%] text-center shadow-[0_30px_60px_rgba(0,0,0,0.6)]">
-          <div className="flex gap-1 mb-4">
-            {[0, 1, 2].map((i) => (
-              <span key={i} className="h-1.5 w-1.5 rounded-full bg-white/30" />
-            ))}
+/** Scale every x,y pair of an absolute M/C path. */
+function scalePath(d: string, sx: number, sy: number) {
+  let i = 0;
+  return d.replace(/-?\d+(\.\d+)?/g, (n) => {
+    const v = parseFloat(n) * (i++ % 2 === 0 ? sx : sy);
+    return v.toFixed(1);
+  });
+}
+
+function ProjectVisual({ visual, hover }: { visual: Visual; hover?: boolean }) {
+  switch (visual) {
+    case "mihailove":
+      return hover ? (
+        <div className="absolute inset-0 grid place-items-center bg-[radial-gradient(ellipse_at_40%_30%,#6b6f55_0%,#3a3c2d_45%,#1b1c15_100%)]">
+          <div className="absolute inset-0 opacity-60 bg-[radial-gradient(circle_at_70%_75%,rgba(255,255,255,0.18),transparent_40%),radial-gradient(circle_at_20%_80%,rgba(255,255,255,0.12),transparent_35%)]" />
+          <span className="relative font-tight text-white text-[2.1vw] font-semibold tracking-[-0.01em] uppercase">Mihailove</span>
+        </div>
+      ) : (
+        <div className="absolute inset-0 bg-[linear-gradient(150deg,#1d1d1f_0%,#2b2620_40%,#5b4520_75%,#2a2017_100%)]">
+          <div className="absolute inset-[8%_-12%_24%_14%] rotate-[-14deg] rounded-xl bg-[repeating-linear-gradient(115deg,#3b2b17_0_18px,#a77a3a_18px_22px,#2a1f12_22px_40px)] opacity-90 shadow-2xl" />
+          <div className="absolute inset-x-0 bottom-0 h-[24%] bg-[linear-gradient(180deg,transparent,#0c0c0d)]" />
+        </div>
+      );
+    case "frame":
+      return hover ? (
+        <div className="absolute inset-0 grid place-items-center bg-[#050505]">
+          <span className="flex items-center gap-[0.6vw] font-tight text-white text-[1.9vw] font-semibold">
+            <span className="inline-block size-[1.4vw] rounded-[0.3vw] border-[0.28vw] border-white" />
+            Frame
+          </span>
+        </div>
+      ) : (
+        <div className="absolute inset-0 bg-[#060606] bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:22px_22px] grid place-items-center p-[8%]">
+          <div className="w-full rounded-lg border border-white/15 bg-[#111] px-[8%] py-[10%] text-center shadow-[0_30px_60px_rgba(0,0,0,0.6)]">
+            <p className="font-tight text-white text-[1.05vw] font-medium leading-tight">
+              Meet the Intelligent
+              <br />
+              Workspace.
+            </p>
+            <span className="inline-block mt-3 h-1.5 w-8 rounded-full bg-[#c6f432]" />
           </div>
-          <p className="font-tight text-white text-[clamp(0.9rem,1.5vw,1.4rem)] font-semibold leading-tight">
-            Meet the Intelligent
-            <br />
-            Workspace.
-          </p>
-          <span className="inline-block mt-3 h-2 w-12 rounded-full bg-[#c6f432]" />
         </div>
-      </div>
-    );
-  }
-  const isBlue = visual === "investor";
-  return (
-    <div
-      className={`absolute inset-0 flex items-center justify-center p-[9%] ${
-        isBlue ? "bg-[linear-gradient(160deg,#2b55ff,#1532d6)]" : "bg-[#86c8f3]"
-      }`}
-    >
-      <div className="w-full rounded-md bg-white p-[7%] shadow-xl">
-        <div className="flex items-center justify-between mb-[10%]">
-          <span className="h-1.5 w-8 rounded-full bg-[#161d25]" />
-          <span className="h-1.5 w-5 rounded-full bg-[#161d25]/30" />
+      );
+    case "portfolio":
+      return hover ? (
+        <div className="absolute inset-0 grid place-items-center bg-[linear-gradient(160deg,#2f5bff,#1532d6)]">
+          <span className="font-tight text-white text-[1.6vw] font-medium tracking-[0.04em]">⌐PORTFOLIO</span>
         </div>
-        <p
-          className={`font-tight font-semibold leading-tight text-[clamp(0.85rem,1.35vw,1.25rem)] ${
-            isBlue ? "text-center text-[#161d25]" : "text-[#1d8fe0]"
-          }`}
-        >
-          {isBlue ? (
-            <>
+      ) : (
+        <div className="absolute inset-0 grid place-items-center p-[5%] bg-[linear-gradient(160deg,#1f3dff,#1532d6)]">
+          <div className="w-full rounded-md bg-white p-[6%] shadow-xl">
+            <p className="text-center font-tight text-[0.9vw] font-semibold leading-tight text-[#161d25]">
               Best connected,
               <br />
               early stage investor
-            </>
-          ) : (
-            <>
+            </p>
+            <div className="mt-[8%] grid grid-cols-3 gap-1.5">
+              {[0, 1, 2, 3, 4, 5].map((i) => (
+                <span key={i} className="aspect-[4/3] rounded bg-[#e9edff]" />
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    case "manypixels":
+      return hover ? (
+        <div className="absolute inset-0 grid place-items-center bg-[#86c8f3]">
+          <span className="font-tight text-[#14213d] text-[1.8vw] font-bold">manypixels</span>
+        </div>
+      ) : (
+        <div className="absolute inset-0 grid place-items-center p-[8%] bg-[#86c8f3]">
+          <div className="w-full rounded-md bg-white p-[6%] shadow-xl">
+            <p className="font-tight text-[0.95vw] font-semibold leading-tight text-[#1d8fe0]">
               On-demand
               <br />
-              <span className="text-[#161d25]">graphic & web design</span>
-            </>
-          )}
-        </p>
-        <div className="mt-[10%] grid grid-cols-3 gap-1.5">
-          {[0, 1, 2].map((i) => (
-            <span key={i} className={`aspect-square rounded ${isBlue ? "bg-[#e9edff]" : "bg-[#dff1fd]"}`} />
-          ))}
+              <span className="text-[#161d25]">graphic &amp; web design</span>
+            </p>
+            <div className="mt-[8%] grid grid-cols-3 gap-1.5">
+              {[0, 1, 2].map((i) => (
+                <span key={i} className="aspect-square rounded bg-[#dff1fd]" />
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      );
+  }
+}
+
+/** Draws `pathEl` so its tip tracks how far the viewport has reached down the path. */
+function useScrollDraw(
+  pathRef: React.RefObject<SVGPathElement | null>,
+  triggerRef: React.RefObject<HTMLElement | null>,
+  d: string | null,
+  reach = 0.72
+) {
+  useGSAP(
+    () => {
+      const path = pathRef.current;
+      const trigger = triggerRef.current;
+      if (!path || !trigger || !d) return;
+
+      const total = path.getTotalLength();
+      // Sample the path: for each length, the deepest y reached so far (monotonic)
+      const N = 600;
+      const lens: number[] = [];
+      const deepest: number[] = [];
+      let maxY = -Infinity;
+      for (let i = 0; i <= N; i++) {
+        const l = (total * i) / N;
+        maxY = Math.max(maxY, path.getPointAtLength(l).y);
+        lens.push(l);
+        deepest.push(maxY);
+      }
+      const lengthForDepth = (y: number) => {
+        let lo = 0;
+        let hi = N;
+        while (lo < hi) {
+          const mid = (lo + hi + 1) >> 1;
+          if (deepest[mid] <= y) lo = mid;
+          else hi = mid - 1;
+        }
+        return deepest[0] > y ? 0 : lens[lo];
+      };
+
+      gsap.set(path, { strokeDasharray: `0 ${total + 10}`, strokeDashoffset: 0 });
+      const state = { drawn: 0 };
+      const apply = () => gsap.set(path, { strokeDasharray: `${state.drawn} ${total + 10}` });
+
+      const st = ScrollTrigger.create({
+        trigger,
+        start: "top bottom",
+        end: "bottom top",
+        onUpdate: () => {
+          const svgTop = path.ownerSVGElement!.getBoundingClientRect().top;
+          const target = lengthForDepth(window.innerHeight * reach - svgTop);
+          gsap.to(state, { drawn: target, duration: 0.6, ease: "power2.out", overwrite: true, onUpdate: apply });
+        },
+      });
+      st.update?.();
+
+      return () => st.kill();
+    },
+    { dependencies: [d] }
   );
 }
 
-function ArchiveList() {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const previewRef = useRef<HTMLDivElement>(null);
-  const [active, setActive] = useState<number | null>(null);
-
-  const onMove = (e: React.MouseEvent) => {
-    if (!cardRef.current || !previewRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    gsap.to(previewRef.current, {
-      y: e.clientY - rect.top - 99,
-      x: (e.clientX - rect.left - rect.width / 2) * 0.12,
-      duration: 0.5,
-      ease: "power3.out",
+function useBoxSize(ref: React.RefObject<HTMLElement | null>) {
+  const [size, setSize] = useState<{ W: number; H: number } | null>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => {
+      const W = el.offsetWidth;
+      const H = el.offsetHeight;
+      setSize((s) => (s && Math.abs(s.W - W) < 1 && Math.abs(s.H - H) < 1 ? s : { W, H }));
     });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [ref]);
+  return size;
+}
+
+function ArchiveList() {
+  const panelRef = useRef<HTMLDivElement>(null);
+  const scribbleRef = useRef<SVGPathElement>(null);
+  const [active, setActive] = useState<number | null>(null);
+  // Most-recent-first order of shown previews, for the stacked deck
+  const [history, setHistory] = useState<number[]>([]);
+  const size = useBoxSize(panelRef);
+  const d = size ? scalePath(SCRIBBLE_PATH, size.W / 1400, size.H / 580) : null;
+  useScrollDraw(scribbleRef, panelRef, d, 0.78);
+
+  const activate = (i: number) => {
+    setActive(i);
+    setHistory((h) => [i, ...h.filter((x) => x !== i)].slice(0, 4));
   };
 
   return (
     <div
-      ref={cardRef}
-      onMouseMove={onMove}
+      ref={panelRef}
       onMouseLeave={() => setActive(null)}
-      className="relative bg-[#f1f1f3] rounded-[24px] sm:rounded-[32px] pt-6 sm:pt-10 pb-16 sm:pb-[88px] overflow-hidden"
+      className="relative isolate overflow-hidden bg-[#f1f1f3] rounded-[var(--r-panel)] pt-[var(--inset)] pb-[var(--inset)] xl:pt-[2.5rem] xl:pb-[5.5rem]"
     >
-      <svg
-        data-scribble
-        className="absolute inset-0 w-full h-full pointer-events-none"
-        viewBox="0 0 1400 580"
-        preserveAspectRatio="none"
-        fill="none"
-        aria-hidden="true"
-      >
-        <path
-          d={SCRIBBLE_PATH}
-          pathLength={1}
-          stroke="#fcd3dd"
-          strokeWidth="32"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeDasharray="1 1"
-          strokeDashoffset="1"
-          vectorEffect="non-scaling-stroke"
-        />
-      </svg>
+      {size && d && (
+        <svg
+          className="absolute inset-0 w-full h-full pointer-events-none"
+          viewBox={`0 0 ${size.W} ${size.H}`}
+          fill="none"
+          aria-hidden="true"
+        >
+          <path ref={scribbleRef} d={d} stroke="#fcd3dd" strokeWidth={32} strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      )}
 
-      {/* Floating hover preview */}
-      <div
-        ref={previewRef}
-        className="hidden md:block absolute left-1/2 top-0 -ml-[81px] w-[162px] h-[198px] rounded-2xl overflow-hidden pointer-events-none z-20 transition-[opacity,scale] duration-300"
-        style={{ opacity: active === null ? 0 : 1, scale: active === null ? "0.8" : "1" }}
-      >
-        {ARCHIVE_PROJECTS.map((p, i) => (
-          <div
-            key={p.title}
-            className="absolute inset-0 flex items-end p-3 transition-opacity duration-300"
-            style={{ background: p.preview, opacity: active === i ? 1 : 0 }}
-          >
-            <span className="font-tight text-white text-sm font-medium">{p.title}</span>
-          </div>
-        ))}
+      {/* Preview deck: centred, layers stack back as you move between rows */}
+      <div className="hidden xl:block absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[270px] h-[330px] pointer-events-none z-[2]">
+        {ARCHIVE_PROJECTS.map((p, i) => {
+          const depth = active === null ? -1 : history.indexOf(i);
+          const shown = depth >= 0 && depth < 3;
+          const style: React.CSSProperties = shown
+            ? {
+                opacity: [1, 0.55, 0.25][depth],
+                transform: `translateY(${[0, -9, -16][depth]}%) scale(${[1, 0.92, 0.85][depth]})`,
+                filter: `blur(${[0, 6, 10][depth]}px)`,
+                zIndex: 10 - depth,
+              }
+            : { opacity: 0, transform: "translateY(6%) scale(0.92)", filter: "blur(8px)", zIndex: 0 };
+          return (
+            <div
+              key={p.title}
+              className="absolute inset-0 rounded-[var(--r-card)] overflow-hidden bg-[#d6d6dd] transition-[opacity,transform,filter] duration-[600ms] ease-[var(--e-out)] will-change-[transform,opacity,filter]"
+              style={{ ...style, background: p.bg }}
+            >
+              <div className="absolute inset-[12%_10%] rounded-md bg-white/90 shadow-lg" />
+              <span className="absolute left-[16%] top-[18%] font-tight text-[13px] font-semibold text-[#161d25]">{p.title}</span>
+            </div>
+          );
+        })}
       </div>
 
-      <ul className="relative z-10">
-        {ARCHIVE_PROJECTS.map((p, i) => (
-          <li key={p.title}>
-            <a
-              href="#"
-              onMouseEnter={() => setActive(i)}
-              className="flex items-center justify-between h-[60px] sm:h-[76px] px-5 sm:px-10 text-[#161d25] group"
+      <ul className="relative z-[1] flex flex-col">
+        {ARCHIVE_PROJECTS.map((p, i) => {
+          const isActive = active === i;
+          const dim = active !== null && !isActive;
+          return (
+            <li
+              key={p.title}
+              className="transition-[background-color,opacity] duration-[600ms] ease-[var(--e-out)]"
+              style={{ background: isActive ? "rgba(255,255,255,0.55)" : "transparent", opacity: dim ? 0.4 : 1 }}
             >
-              <span className="font-tight text-[22px] sm:text-[32px] font-medium leading-[1.2] transition-transform duration-300 group-hover:translate-x-2">
-                {p.title}
-              </span>
-              <span className="font-tight flex items-center gap-3.5 text-[13px] sm:text-[16px]">
-                {p.scope}
-                <span className="h-[5px] w-[5px] rounded-full bg-[#161d25]" />
-                {p.year}
-              </span>
-            </a>
-          </li>
-        ))}
+              <a
+                href="#"
+                onMouseEnter={() => activate(i)}
+                onFocus={() => activate(i)}
+                className="grid grid-cols-[minmax(0,1fr)_auto] items-center h-[4.75rem] px-[var(--inset)] text-[#161d25]"
+              >
+                <span className="font-tight font-medium leading-[1.2] text-[length:var(--t-card-title)]">{p.title}</span>
+                <span className="font-tight justify-self-end inline-flex items-center gap-[0.875rem] text-[1rem] leading-[1.2] whitespace-nowrap">
+                  <span>{p.scope}</span>
+                  <span
+                    className="size-[0.3125rem] rounded-full bg-current transition-[color,opacity] duration-[600ms] ease-[var(--e-out)]"
+                    style={{ color: isActive ? "#d90033" : "#161d25", opacity: isActive ? 1 : 0.4 }}
+                  />
+                  <span
+                    className="min-w-[2.625rem] text-right transition-colors duration-[600ms] ease-[var(--e-out)]"
+                    style={{ color: isActive ? "#d90033" : "#161d25" }}
+                  >
+                    {p.year}
+                  </span>
+                </span>
+              </a>
+            </li>
+          );
+        })}
       </ul>
 
-      <a
-        href="#projects"
-        className="font-tight relative z-10 inline-flex items-center gap-2 mt-6 mx-5 sm:mx-10 text-[12px] font-medium uppercase tracking-[0.06em] text-[#161d25] hover:opacity-70 transition-opacity"
-      >
-        View all
-        <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
-          <path d="M2 8 L8 2 M3 2 H8 V7" stroke="currentColor" strokeWidth="1.4" fill="none" />
-        </svg>
-      </a>
+      <div className="relative z-[1] px-[var(--inset)] mt-6 xl:mt-[3rem]">
+        <a
+          href="#projects"
+          className="font-tight inline-flex items-center gap-[0.375rem] text-[0.75rem] uppercase tracking-[0.06em] text-[#161d25] transition-colors duration-[600ms] ease-[var(--e-out)] hover:text-[#d90033]"
+        >
+          View all
+          <svg width="8" height="8" viewBox="0 0 10 10" aria-hidden="true">
+            <path d="M2 8 L8 2 M3 2 H8 V7" stroke="currentColor" strokeWidth="1.4" fill="none" />
+          </svg>
+        </a>
+      </div>
     </div>
   );
 }
 
-export default function ProjectsSection() {
-  const sectionRef = useRef<HTMLElement>(null);
-
-  useGSAP(
-    () => {
-      const q = gsap.utils.selector(sectionRef);
-
-      gsap.fromTo(
-        q("[data-thread] path"),
-        { strokeDashoffset: 1 },
-        {
-          strokeDashoffset: 0,
-          ease: "none",
-          scrollTrigger: { trigger: q("[data-grid]")[0], start: "top 85%", end: "bottom 60%", scrub: 0.6 },
-        }
-      );
-
-      gsap.fromTo(
-        q("[data-scribble] path"),
-        { strokeDashoffset: 1 },
-        {
-          strokeDashoffset: 0,
-          ease: "none",
-          scrollTrigger: { trigger: q("[data-scribble]")[0], start: "top 80%", end: "bottom 70%", scrub: 0.6 },
-        }
-      );
-
-      q("[data-card]").forEach((card) => {
-        gsap.from(card, {
-          y: 80,
-          autoAlpha: 0,
-          duration: 1,
-          ease: "power3.out",
-          scrollTrigger: { trigger: card, start: "top 90%" },
-        });
-      });
-    },
-    { scope: sectionRef }
+function CaseCard({ project }: { project: (typeof FEATURED_PROJECTS)[number] }) {
+  return (
+    <a href="#" className="group block">
+      <span className="relative block aspect-[380/440] w-full overflow-hidden rounded-[var(--r-card)] bg-[#f1f1f3]">
+        {/* Base image */}
+        <span className="absolute inset-0 transition-[transform,opacity] duration-[800ms,400ms] ease-[var(--e-out)] group-hover:scale-[1.06] group-hover:opacity-0">
+          <ProjectVisual visual={project.visual} />
+        </span>
+        {/* Hover image dissolves in */}
+        <span className="absolute inset-0 scale-[1.08] opacity-0 blur-[6px] transition-[transform,opacity,filter] duration-[800ms,400ms,600ms] ease-[var(--e-out)] group-hover:scale-100 group-hover:opacity-100 group-hover:blur-0">
+          <ProjectVisual visual={project.visual} hover />
+        </span>
+      </span>
+      <span className="mt-[0.75rem] md:mt-[1rem] flex flex-col gap-[0.5rem] md:gap-[0.75rem]">
+        <span className="font-tight text-[0.75rem] font-medium leading-none text-[#5d646b]">{project.tag}</span>
+        <span className="font-tight font-medium leading-none text-[#161d25] opacity-90 text-[length:var(--t-card-title)]">
+          {project.title}
+        </span>
+      </span>
+    </a>
   );
+}
+
+export default function ProjectsSection() {
+  const stageRef = useRef<HTMLDivElement>(null);
+  const threadRef = useRef<SVGPathElement>(null);
+  const size = useBoxSize(stageRef);
+  // Thread only exists on the free-form ≥1440px stage
+  const wide = size !== null && size.W >= 1440;
+  const d = wide && size ? scalePath(THREAD_PATH, size.W / 1440, size.H / 1749) : null;
+  useScrollDraw(threadRef, stageRef, d, 0.72);
 
   return (
-    <section ref={sectionRef} id="projects" className="relative w-full bg-white pt-24 sm:pt-[200px] pb-5">
-      <h2 className="font-tight text-center uppercase font-medium leading-none tracking-[-0.03em] text-[#161d25] text-[13.54vw] px-2.5 sm:px-5">
-        Our projects
-      </h2>
+    <section id="projects" className="relative bg-white">
+      <div className="mx-auto w-[calc(100%-var(--frame)*2)] isolate pt-[4rem] md:pt-[12.5rem]">
+        <h2 className="relative z-0 font-tight font-medium uppercase leading-none text-[#161d25] text-left md:text-center md:whitespace-nowrap text-[length:var(--t-mega)]">
+          Our projects
+        </h2>
 
-      {/* Featured cards + thread */}
-      <div data-grid className="relative mt-12 sm:mt-[12vw] md:h-[121.5vw] px-5 md:px-0">
-        <svg
-          data-thread
-          className="hidden md:block absolute inset-0 w-full h-full pointer-events-none overflow-visible"
-          viewBox="0 0 1440 1750"
-          preserveAspectRatio="none"
-          fill="none"
-          aria-hidden="true"
-        >
-          <path
-            d={THREAD_PATH}
-            pathLength={1}
-            stroke="#fcd3dd"
-            strokeWidth="32"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeDasharray="1 1"
-            strokeDashoffset="1"
-            vectorEffect="non-scaling-stroke"
-          />
-        </svg>
+        {/* Stage: full-bleed on ≥1440px (cards placed freely), 2-col / 1-col grid below */}
+        <div className="relative w-full min-[1440px]:w-[calc(100%+var(--frame)*2)] min-[1440px]:-ml-[var(--frame)]">
+          <div
+            ref={stageRef}
+            className="relative grid grid-cols-1 gap-[2rem] mt-[1.75rem] mb-[3rem] md:max-[1439px]:grid-cols-2 md:max-[1439px]:gap-x-[2.5rem] md:max-[1439px]:gap-y-[5rem] md:max-[1439px]:mt-[6rem] md:max-[1439px]:mb-[8rem] min-[1440px]:block min-[1440px]:h-[121.458vw] min-[1440px]:mt-[11.9444vw] min-[1440px]:mb-[clamp(8rem,10vw,12.5rem)]"
+          >
+            {wide && size && d && (
+              <svg
+                className="absolute inset-0 w-full h-full pointer-events-none overflow-visible -z-[1]"
+                viewBox={`0 0 ${size.W} ${size.H}`}
+                fill="none"
+                aria-hidden="true"
+              >
+                <path ref={threadRef} d={d} stroke="#fcd3dd" strokeWidth={32} strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            )}
 
-        <div className="flex flex-col gap-12 md:block">
-          {FEATURED_PROJECTS.map((p) => (
-            <a
-              key={p.title}
-              data-card
-              href="#"
-              className="group relative block md:absolute md:w-[26.4vw] md:left-[var(--l)] md:top-[var(--t)]"
-              style={{ "--l": p.left, "--t": p.top } as React.CSSProperties}
-            >
-              <div className="relative aspect-[380/445] rounded-2xl overflow-hidden bg-[#d6d6dd]">
-                <div className="absolute inset-0 transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]">
-                  <ProjectVisual visual={p.visual} title={p.title} />
-                </div>
+            {FEATURED_PROJECTS.map((p, i) => (
+              <div
+                key={p.title}
+                data-case
+                className={`relative z-[1] w-full min-[1440px]:absolute min-[1440px]:w-[26.3889vw] min-[1440px]:left-[var(--x)] min-[1440px]:top-[var(--y)] ${
+                  i % 2 === 1 ? "md:max-[1439px]:mt-[7.5rem]" : ""
+                }`}
+                style={{ "--x": p.x, "--y": p.y } as React.CSSProperties}
+              >
+                <CaseCard project={p} />
               </div>
-              <p className="font-tight mt-4 text-[12px] font-medium leading-none text-[#5d646b]">{p.tag}</p>
-              <h3 className="font-tight mt-2.5 text-[26px] sm:text-[32px] font-medium leading-none text-[#161d25]">
-                {p.title}
-              </h3>
-            </a>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
 
-      <div className="px-2.5 sm:px-5 mt-16 sm:mt-[73px]">
+      {/* Archive */}
+      <div className="mx-auto w-[calc(100%-var(--frame)*2)] pt-[3.5rem] md:pt-[4.5625rem]">
         <ArchiveList />
       </div>
     </section>

@@ -14,7 +14,7 @@ const SERVICES = [
     description:
       "Begin Webflow development with our Project Discovery session, aligning our team with your goals, timeline, and required functionalities. We prioritize understanding your content strategy, feature needs, and desired user experiences.",
     bg: "#ffffff",
-    rotate: -3,
+    rotate: -2.2,
   },
   {
     index: "02",
@@ -22,7 +22,7 @@ const SERVICES = [
     description:
       "Join our UX/UI Design Workshop to kickstart your design journey. We'll analyze user experiences, pinpoint issues, and create a strategic vision for an engaging interface that aligns with business goals and user needs.",
     bg: "#f1f1f3",
-    rotate: 2,
+    rotate: -0.3,
   },
   {
     index: "03",
@@ -30,7 +30,7 @@ const SERVICES = [
     description:
       "By partnering with us for your branding needs, you receive a step-by-step, personalized experience that results in a compelling and memorable brand identity, ready to make its mark in your industry and beyond.",
     bg: "#e8e9eb",
-    rotate: -1.5,
+    rotate: 1.7,
   },
   {
     index: "04",
@@ -38,7 +38,7 @@ const SERVICES = [
     description:
       "In the last phase, Webflow Site Launch & Training, we make your site live and provide comprehensive training. This includes a CMS walkthrough, content management best practices, and tips for ongoing maintenance.",
     bg: "#dbdcde",
-    rotate: 1,
+    rotate: 3.6,
   },
 ];
 
@@ -101,38 +101,60 @@ export default function ServicesSection() {
   useGSAP(
     () => {
       const cards = gsap.utils.toArray<HTMLElement>("[data-service-card]", sectionRef.current);
-      if (!cards.length) return;
+      const pin = pinRef.current;
+      if (!cards.length || !pin) return;
 
-      gsap.set(cards, { yPercent: 160, rotate: 0 });
+      // Parked just below the panel's bottom edge with the top ~3rem peeking out, so the first card
+      // is already visible while the section scrolls in and simply keeps rising once it pins.
+      const parkedY = () => {
+        const stack = cards[0].offsetParent as HTMLElement;
+        const peek = parseFloat(getComputedStyle(document.documentElement).fontSize) * 2.6;
+        return pin.offsetHeight - stack.offsetTop - peek;
+      };
+
+      gsap.set(cards, { y: parkedY, rotate: 0 });
+      // Only the card whose turn it is shows while parked (avoids a mixed stack peeking out)
+      gsap.set(cards.slice(1), { autoAlpha: 0 });
+
+      const frame = () => parseFloat(getComputedStyle(document.documentElement).fontSize) * 1.25;
 
       const tl = gsap.timeline({
-        defaults: { ease: "power2.out" },
+        defaults: { ease: "power3.out" },
         scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top top",
-          end: () => `+=${window.innerHeight * 2.6}`,
-          scrub: 0.8,
-          pin: pinRef.current,
+          trigger: pin,
+          start: () => `top top+=${frame()}`,
+          end: () => `+=${window.innerHeight * 2.4}`,
+          scrub: 0.6,
+          pin,
+          anticipatePin: 1,
           invalidateOnRefresh: true,
         },
       });
 
+      // Reference rhythm: each card rises over ~19% of the pin, a new one every ~25%
+      const step = 0.254;
+      const rise = 0.19;
       cards.forEach((card, i) => {
-        tl.to(card, { yPercent: 0, rotate: SERVICES[i].rotate, duration: 1 }, i === 0 ? 0 : ">-0.1");
-        if (i > 0) {
-          tl.to(cards.slice(0, i), { scale: `-=0.03`, duration: 1 }, "<");
-        }
+        const at = i * step;
+        if (i > 0) tl.set(card, { autoAlpha: 1 }, at);
+        tl.fromTo(
+          card,
+          { y: parkedY, rotate: 0 },
+          { y: 0, rotate: SERVICES[i].rotate, duration: rise, immediateRender: false },
+          at
+        );
       });
-      tl.to({}, { duration: 0.4 });
+      // Release right after the last card lands
+      tl.to({}, { duration: 1 - (3 * step + rise) });
     },
     { scope: sectionRef }
   );
 
   return (
-    <section ref={sectionRef} id="services" className="relative w-full bg-white px-2.5 sm:px-5 pb-5">
+    <section ref={sectionRef} id="services" className="relative w-full bg-white px-2.5 sm:px-5 pt-[5rem] pb-5">
       <div
         ref={pinRef}
-        className="relative w-full h-[calc(100svh-20px)] sm:h-[calc(100svh-40px)] min-h-[600px] bg-[#161d25] rounded-[24px] sm:rounded-[32px] overflow-hidden p-5 sm:p-10"
+        className="relative w-full h-[calc(100svh-20px)] sm:h-[calc(100svh-2.5rem)] min-h-[600px] bg-[#161d25] rounded-[24px] sm:rounded-[32px] overflow-hidden p-5 sm:p-10"
       >
         <h2 className="font-tight text-center uppercase text-white font-medium leading-none tracking-[-0.02em] text-[clamp(3rem,7.9vw,8rem)]">
           Services

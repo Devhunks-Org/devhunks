@@ -15,7 +15,22 @@
 
 
 
+/* Layout tokens (match the reference build) */
+:root {
+  --frame: 1.25rem;
+  --inset: clamp(1.25rem, calc(100vw / 36), 2.5rem);
+  --content-w: calc(100vw - var(--frame) * 2 - var(--inset) * 2);
+  --t-card-title: max(1.25rem, calc(var(--content-w) * 32 / 1320));
+  --t-section: max(1.875rem, calc(var(--content-w) * 114 / 1320));
+  --t-mega: max(2.75rem, calc(var(--content-w) * 195 / 1320));
+  --r-card: 1rem;
+  --r-panel: clamp(1.25rem, calc(100vw / 45), 2rem);
+  --e-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 html {
+  /* 16px up to 1440px wide, then grows with the viewport */
+  font-size: max(1rem, 0.625rem + 0.416667vw);
   background-color: var(--c-bg);
   color: var(--c-text);
   overflow-x: hidden;
